@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as session from 'express-session'; // 引入session模块 用于存储用户会话信息
-import * as cookieParser from 'cookie-parser'; // 引入cookie-parser模块 用于解析cookie
+import session from 'express-session'; // 引入session模块 用于存储用户会话信息
+import cookieParser from 'cookie-parser'; // 引入cookie-parser模块 用于解析cookie
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path'; // 引入join函数 用于拼接路径
 
@@ -32,6 +32,8 @@ async function bootstrap() {
     saveUninitialized: true, // 无论是否有修改 都保存session
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 会话过期时间 7天
+      httpOnly: true,        // ✅ 建议加上，增强安全性
+      sameSite: 'lax',       // ✅ 建议加上，CSRF保护
     },
   }));
   await app.listen(process.env.PORT ?? 3000);
