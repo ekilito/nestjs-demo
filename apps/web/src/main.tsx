@@ -19,6 +19,21 @@ createRoot(document.getElementById('root')!).render(
             colorPrimary: '#1677ff',
             borderRadius: 8,
           },
+          components: {
+            Menu: {
+              itemHeight: 40,
+              itemBorderRadius: 6,
+              itemMarginInline: 8,
+              itemSelectedBg: 'rgba(22, 119, 255, 0.12)',
+              itemSelectedColor: '#1677ff',
+              itemHoverBg: 'rgba(22, 119, 255, 0.06)',
+              itemActiveBg: 'rgba(22, 119, 255, 0.10)',
+            },
+            Layout: {
+              headerBg: '#fff',
+              siderBg: '#fff',
+            },
+          },
         }}
       >
         <App />

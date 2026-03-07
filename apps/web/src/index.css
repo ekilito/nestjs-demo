@@ -8,3 +8,41 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* --- Ant Design Pro-like menu selected strip --- */
+.ant-menu-light .ant-menu-item,
+.ant-menu-light .ant-menu-submenu-title {
+  position: relative;
+}
+.ant-menu-light .ant-menu-item-selected::before,
+.ant-menu-light .ant-menu-submenu-selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background-color: #1677ff;
+  border-radius: 2px;
+}
+.ant-menu-inline .ant-menu-submenu-title,
+.ant-menu-inline .ant-menu-item {
+  margin-inline: 8px;
+  border-radius: 6px;
+}
+
+/* --- Hide selected look when menu is collapsed --- */
+.ant-menu-inline-collapsed .ant-menu-item-selected,
+.ant-menu-inline-collapsed .ant-menu-submenu-selected {
+  background-color: transparent !important;
+  color: inherit;
+}
+.ant-menu-inline-collapsed .ant-menu-item-selected::before,
+.ant-menu-inline-collapsed .ant-menu-submenu-selected::before {
+  display: none;
+}
+
+/* --- Tabs bar container look --- */
+.app-tags-bar {
+  border-bottom: 1px solid rgba(5, 5, 5, 0.06);
+}
