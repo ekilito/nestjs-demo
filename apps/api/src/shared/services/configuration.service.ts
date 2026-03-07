@@ -1,28 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
 @Injectable()
 export class ConfigurationService {
   constructor(private configService: ConfigService) { }
   get mysqlHost(): string {
-    return this.configService.getOrThrow<string>('MYSQL_HOST');
+    return this.configService.get<string>('MYSQL_HOST') ?? '';
   }
   get mysqlPort(): number {
-    const v = this.configService.getOrThrow<string>('MYSQL_PORT');
-    const n = Number(v);
-    if (Number.isNaN(n)) {
-      throw new Error('MYSQL_PORT must be a number');
-    }
-    return n;
+    return this.configService.get<number>('MYSQL_PORT') ?? 0;
   }
   get mysqlDb(): string {
-    return this.configService.getOrThrow<string>('MYSQL_DB');
+    return this.configService.get<string>('MYSQL_DB') ?? '';
   }
   get mysqlUser(): string {
-    return this.configService.getOrThrow<string>('MYSQL_USER');
+    return this.configService.get<string>('MYSQL_USER') ?? '';
   }
   get mysqlPass(): string {
-    return this.configService.getOrThrow<string>('MYSQL_PASS');
+    return this.configService.get<string>('MYSQL_PASS') ?? '';
   }
   get mysqlConfig() {
     return {
