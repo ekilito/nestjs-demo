@@ -6,21 +6,22 @@ import { User } from './entities/user.entity';
 @Global()
 @Module({
   imports: [
-    ConfigModule.forRoot({
+    ConfigModule.forRoot({ // 加载环境变量配置
       isGlobal: true,
       envFilePath: ['.env', 'apps/api/.env'],
     }),
+    // 配置TypeORM连接MySQL数据库
     TypeOrmModule.forRootAsync({
-      inject: [ConfigurationService],
+      inject: [ConfigurationService], 
       useFactory: (configurationService: ConfigurationService) => ({
-        type: 'mysql',
-        ...configurationService.mysqlConfig,
-        autoLoadEntities: true,
-        synchronize: true,
-        logging: false,
+        type: 'mysql', // 数据库类型
+        ...configurationService.mysqlConfig, // 从ConfigurationService获取MySQL连接配置
+        autoLoadEntities: true, // 自动加载所有实体类
+        synchronize: true, // 自动同步数据库 schema（生产环境不建议使用）
+        logging: false, // 关闭SQL日志输出（生产环境建议开启）
       }),
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User]), // 注册User实体类，使其在当前模块可用
   ],
   providers: [ConfigurationService],
   exports: [ConfigurationService],
