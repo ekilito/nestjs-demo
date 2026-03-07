@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigurationService } from './services/configuration.service';
 import { User } from './entities/user.entity';
+import { UserService } from './services/user.service';
 @Global()
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { User } from './entities/user.entity';
     }),
     // 配置TypeORM连接MySQL数据库
     TypeOrmModule.forRootAsync({
-      inject: [ConfigurationService], 
+      inject: [ConfigurationService],
       useFactory: (configurationService: ConfigurationService) => ({
         type: 'mysql', // 数据库类型
         ...configurationService.mysqlConfig, // 从ConfigurationService获取MySQL连接配置
@@ -23,7 +24,7 @@ import { User } from './entities/user.entity';
     }),
     TypeOrmModule.forFeature([User]), // 注册User实体类，使其在当前模块可用
   ],
-  providers: [ConfigurationService],
-  exports: [ConfigurationService],
+  providers: [ConfigurationService, UserService],
+  exports: [ConfigurationService, UserService],
 })
 export class SharedModule { }
