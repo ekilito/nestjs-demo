@@ -7,6 +7,7 @@ export class UserController {
     private readonly userService: UserService
   ) { }
 
+  // 获取所有用户
   @Get()
   async findAll() {
     const users = await this.userService.findAll();
