@@ -1,5 +1,5 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { CreateUserDto } from '../../shared/dtos/user.dto';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { CreateUserDto, UpdateUserDto } from '../../shared/dtos/user.dto';
 import { UserService } from '../../shared/services/user.service';
 
 
@@ -9,9 +9,44 @@ export class UserController {
     private readonly userService: UserService
   ) {
   }
+  @Get("findOne/:id")
+  async findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.userService.findOne({
+      where: { // 查找条件
+        id,
+      }
+    });
+  }
   @Post('/create')
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  @Put('/update/:id')
+  async update(@Param("id", ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+    const updateResult = await this.userService.update(id, updateUserDto);
+    if (!updateResult.affected) {
+      throw new HttpException('用户未找到', HttpStatus.NOT_FOUND);
+    }
+    return {
+      code: HttpStatus.OK,
+      message: '用户信息更新成功',
+      success: true,
+    }
+    // return Result.success('用户信息更新成功');
+  }
+
+  @Delete('/delete/:id')
+  async delete(@Param("id", ParseIntPipe) id: number) {
+    const deleteResult = await this.userService.delete(id);
+    if (!deleteResult.affected) {
+      throw new HttpException('用户未找到', HttpStatus.NOT_FOUND);
+    }
+    return {
+      code: HttpStatus.OK,
+      message: '用户删除成功',
+      success: true,
+    }
   }
 
 }

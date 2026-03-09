@@ -21,3 +21,8 @@ export class CreateUserDto {
   @IsOptionalBoolean()
   readonly is_super?: boolean;
 }
+
+export class UpdateUserDto extends CreateUserDto {
+  @IsOptionalNumber()
+  readonly id: number;
+}
