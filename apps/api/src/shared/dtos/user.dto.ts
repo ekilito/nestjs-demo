@@ -1,18 +1,18 @@
 import { IsString, Validate } from 'class-validator';
-import { IsOptionalString, IsOptionalEmail, IsOptionalNumber, IsOptionalBoolean } from '../decorators/validation-and-transform.decorators';
+import { PasswordValidators, IsOptionalString, EmailValidators, IsOptionalNumber, IsOptionalBoolean } from '../decorators/validation-and-transform.decorators';
 
 export class CreateUserDto {
 
   @IsString()
   readonly username: string;
 
-  @IsString()
+  @PasswordValidators()
   readonly password: string;
 
   @IsOptionalString()
   readonly mobile?: string;
 
-  @IsOptionalEmail()
+  @EmailValidators()
   readonly email?: string;
 
   @IsOptionalNumber()

@@ -4,6 +4,7 @@ import session from 'express-session'; // 引入session模块 用于存储用户
 import cookieParser from 'cookie-parser'; // 引入cookie-parser模块 用于解析cookie
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path'; // 引入join函数 用于拼接路径
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
@@ -38,6 +39,13 @@ async function bootstrap() {
       },
     }),
   );
+  // ✅ 5. 配置全局验证管道（自动验证 DTO 数据）
+  app.useGlobalPipes(new ValidationPipe(
+    {
+      transform: true, // 开启自动转换（将请求数据转换为 DTO 实例）
+    }
+  ));
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
