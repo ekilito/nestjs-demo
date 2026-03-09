@@ -1,22 +1,40 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put, SerializeOptions, UseInterceptors } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from '../../shared/dtos/user.dto';
 import { UserService } from '../../shared/services/user.service';
+import { ApiOperation, ApiResponse, ApiParam, ApiBody, ApiTags, ApiCookieAuth, ApiBearerAuth } from '@nestjs/swagger';
+import { User } from '../../shared/entities/user.entity';
+import { Result } from '../../shared/vo/result';
+// ApiOperation: 用于描述控制器方法的操作，生成 Swagger 文档时使用 (summary: 摘要, description: 描述)
+// ApiResponse: 用于描述控制器方法的响应，生成 Swagger 文档时使用 (status: 状态码, description: 描述)
+// ApiParam: 用于描述控制器方法的参数，生成 Swagger 文档时使用 (name: 参数名, description: 描述)
+// ApiBody: 用于描述控制器方法的请求体，生成 Swagger 文档时使用 (description: 描述)
+// ApiTags: 用于描述控制器的标签，生成 Swagger 文档时使用 (name: 标签名)
+// ApiCookieAuth: 用于描述控制器方法需要 Cookie 认证，生成 Swagger 文档时使用 (name: Cookie 名)
+// ApiBearerAuth: 用于描述控制器方法需要 Bearer 认证，生成 Swagger 文档时使用 (name: Bearer 名)
 
-
+@ApiTags('user')
+@SerializeOptions({ strategy: 'exposeAll' }) // 序列化选项 - 暴露所有属性
+@UseInterceptors(ClassSerializerInterceptor) // 类序列化拦截器 - 用于序列化响应数据
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService
   ) {
   }
-  // 获取所有用户
+
   @Get('all')
+  @ApiOperation({ summary: '获取所有用户列表' })
+  @ApiResponse({ status: 200, description: '成功返回用户列表', type: [User] })
   async findAll() {
     const users = await this.userService.findAll();
     return { users };
   }
 
   @Get("findOne/:id")
+  @ApiOperation({ summary: '根据ID获取用户信息' })
+  @ApiResponse({ status: 200, description: '成功返回用户信息', type: User })
+  @ApiResponse({ status: 404, description: '用户未找到' })
+  @ApiParam({ name: 'id', description: '用户ID', type: Number })
   async findOne(@Param("id", ParseIntPipe) id: number) {
     return this.userService.findOne({
       where: { // 查找条件
@@ -24,12 +42,24 @@ export class UserController {
       }
     });
   }
+
   @Post('/create')
+  @ApiOperation({ summary: '创建新用户' })
+  @ApiBearerAuth()
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({ status: 201, description: '用户成功创建', type: User })
+  @ApiResponse({ status: 400, description: '请求参数错误' })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Put('/update/:id')
+  @ApiOperation({ summary: '更新用户信息' })
+  @ApiParam({ name: 'id', description: '用户ID', type: Number })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiResponse({ status: 200, description: '用户信息更新成功', type: Result })
+  @ApiResponse({ status: 400, description: '请求参数错误' })
+  @ApiResponse({ status: 404, description: '用户未找到' })
   async update(@Param("id", ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
     const updateResult = await this.userService.update(id, updateUserDto);
     if (!updateResult.affected) {
@@ -44,6 +74,10 @@ export class UserController {
   }
 
   @Delete('/delete/:id')
+  @ApiOperation({ summary: '删除用户' })
+  @ApiParam({ name: 'id', description: '用户ID', type: Number })
+  @ApiResponse({ status: 200, description: '用户删除成功', type: Result })
+  @ApiResponse({ status: 404, description: '用户未找到' })
   async delete(@Param("id", ParseIntPipe) id: number) {
     const deleteResult = await this.userService.delete(id);
     if (!deleteResult.affected) {
