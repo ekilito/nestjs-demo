@@ -1,0 +1,23 @@
+import { IsString, Validate } from 'class-validator';
+import { IsOptionalString, IsOptionalEmail, IsOptionalNumber, IsOptionalBoolean } from '../decorators/validation-and-transform.decorators';
+
+export class CreateUserDto {
+
+  @IsString()
+  readonly username: string;
+
+  @IsString()
+  readonly password: string;
+
+  @IsOptionalString()
+  readonly mobile?: string;
+
+  @IsOptionalEmail()
+  readonly email?: string;
+
+  @IsOptionalNumber()
+  readonly status?: number;
+
+  @IsOptionalBoolean()
+  readonly is_super?: boolean;
+}
