@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigurationService } from './services/configuration.service';
 import { User } from './entities/user.entity';
 import { UserService } from './services/user.service';
+import { IsUsernameUniqueConstraint } from './validators/user-validators'; // 引入自定义验证器
 @Global()
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { UserService } from './services/user.service';
     }),
     TypeOrmModule.forFeature([User]), // 注册User实体类，使其在当前模块可用
   ],
-  providers: [ConfigurationService, UserService],
-  exports: [ConfigurationService, UserService],
+  providers: [ConfigurationService, UserService, IsUsernameUniqueConstraint],
+  exports: [ConfigurationService, UserService, IsUsernameUniqueConstraint],
 })
 export class SharedModule { }

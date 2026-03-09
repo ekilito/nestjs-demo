@@ -33,22 +33,25 @@ export function StartsWith(prefix: string, validationOptions?: ValidationOptions
   };
 }
 
+let userRepository: Repository<User>;
 // 定义一个自定义验证器，名为 'isUsernameUnique'，需要异步验证
 @ValidatorConstraint({ name: 'isUsernameUnique', async: true })
 @Injectable()
 // 定义 IsUsernameUniqueConstraint 类并实现 ValidatorConstraintInterface 接口
 export class IsUsernameUniqueConstraint implements ValidatorConstraintInterface {
-  // constructor(
-  //   @InjectRepository(User)
-  //   protected repository: Repository<User> // 依赖注入 (TODO 无法注入)
-  // ) {
-
-  // }
+  constructor(
+    @InjectRepository(User)
+    protected repository: Repository<User> // 依赖注入 
+  ) {
+    if (!userRepository) {
+      userRepository = this.repository;
+    }
+  }
   // 定义异步验证逻辑，检查用户名是否唯一
-  async validate(value: any, args: ValidationArguments) {
-    const existingUsernames = ['user_xxx', 'USER', 'GUEST']; // 模拟已存在的用户名列表 调接口
-    // const user = await this.repository.findOneBy({ username: value });
-    return !existingUsernames.includes(value); // 检查用户名是否在已有列表中
+  validate = async (value: any, args: ValidationArguments) => {
+    // const existingUsernames = ['user_xxx', 'USER', 'GUEST']; // 模拟已存在的用户名列表 调接口
+    const user = await userRepository.findOneBy({ username: value });
+    return !user; // 检查用户名是否已存在
   }
   // 定义验证失败时的默认错误消息
   defaultMessage(args: ValidationArguments) {
