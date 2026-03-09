@@ -9,6 +9,13 @@ export class UserController {
     private readonly userService: UserService
   ) {
   }
+  // 获取所有用户
+  @Get('all')
+  async findAll() {
+    const users = await this.userService.findAll();
+    return { users };
+  }
+
   @Get("findOne/:id")
   async findOne(@Param("id", ParseIntPipe) id: number) {
     return this.userService.findOne({
