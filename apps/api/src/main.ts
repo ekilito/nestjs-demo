@@ -7,10 +7,19 @@ import { join } from 'path'; // 引入join函数 用于拼接路径
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import { MyLogger } from './logger';
+import { ExtendedConsoleLogger } from './extended-console-logger';
 
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    // logger: false, // 关闭默认的日志记录器
+    // logger: ['error', 'warn', 'log'], // 只保留错误、警告和日志记录
+    // logger: console, // 打印所有日志到控制台 自定义的实现
+    // logger: new ExtendedConsoleLogger(), // 打印所有日志到控制台 自定义的实现
+    // bufferLogs: true, // 启用缓冲区日志记录
+  });
+  // app.useLogger(app.get(MyLogger));
 
   // ✅ 1. 配置静态资源目录（用于前端打包后的文件）
   app.useStaticAssets(join(__dirname, '..', 'public'), {
