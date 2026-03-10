@@ -1,14 +1,26 @@
 import { IsString, Validate } from 'class-validator';
-import { PasswordValidators, IsOptionalString, EmailValidators, IsOptionalNumber, IsOptionalBoolean } from '../decorators/validation-and-transform.decorators';
-import { IsUsernameUnique, StartsWith, StartsWithConstraint } from '../validators/user-validators';
+import {
+  PasswordValidators,
+  IsOptionalString,
+  EmailValidators,
+  IsOptionalNumber,
+  IsOptionalBoolean,
+} from '../decorators/validation-and-transform.decorators';
+import {
+  IsUsernameUnique,
+  StartsWith,
+  StartsWithConstraint,
+} from '../validators/user-validators';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 // ApiProperty: 用于描述 DTO 类中的属性，生成 Swagger 文档时使用 (description: 描述, example: 示例)
 // ApiPropertyOptional: 用于描述可选属性，生成 Swagger 文档时使用
 // PartialType: 用于创建一个部分类型的 DTO 类，继承自原始类，用于更新操作
 
 export class CreateUserDto {
-
-  @ApiProperty({ description: '用户名，必须唯一且以指定前缀开头', example: 'user_john_doe' })
+  @ApiProperty({
+    description: '用户名，必须唯一且以指定前缀开头',
+    example: 'user_john_doe',
+  })
   @IsString()
   // 自定义校验器（同步），两种方式都可以
   // @Validate(StartsWithConstraint, ['user_'], {message: `Username must start with "user_".`,})
@@ -25,7 +37,10 @@ export class CreateUserDto {
   @IsOptionalString()
   readonly mobile?: string;
 
-  @ApiPropertyOptional({ description: '邮箱地址', example: 'john.doe@example.com' })
+  @ApiPropertyOptional({
+    description: '邮箱地址',
+    example: 'john.doe@example.com',
+  })
   @EmailValidators()
   readonly email?: string;
 

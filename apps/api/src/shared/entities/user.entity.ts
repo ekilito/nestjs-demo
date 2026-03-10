@@ -1,5 +1,15 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { ApiHideProperty, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import {
+  ApiHideProperty,
+  ApiProperty,
+  ApiPropertyOptional,
+} from '@nestjs/swagger';
 import { Exclude, Expose, Transform } from 'class-transformer';
 
 @Entity()
@@ -18,16 +28,28 @@ export class User {
   password: string;
 
   @Column({ length: 15, nullable: true })
-  @ApiPropertyOptional({ description: '手机号', example: '1234567890', format: '手机号码会被部分隐藏' })
-  @Transform(({ value }) => value ? value.replace(/(\d{3})(\d{4})(\d{4})/, '$1****$3') : value) // 手机号部分隐藏
+  @ApiPropertyOptional({
+    description: '手机号',
+    example: '1234567890',
+    format: '手机号码会被部分隐藏',
+  })
+  @Transform(({ value }) =>
+    value ? value.replace(/(\d{3})(\d{4})(\d{4})/, '$1****$3') : value,
+  ) // 手机号部分隐藏
   mobile: string;
 
   @Column({ length: 100, nullable: true })
-  @ApiPropertyOptional({ description: '邮箱地址', example: 'john.doe@example.com' })
+  @ApiPropertyOptional({
+    description: '邮箱地址',
+    example: 'john.doe@example.com',
+  })
   email: string;
 
   @Expose()
-  @ApiProperty({ description: '联系方式', example: 'mobile:123****7890, email:john.doe@example.com' })
+  @ApiProperty({
+    description: '联系方式',
+    example: 'mobile:123****7890, email:john.doe@example.com',
+  })
   get contact(): string {
     return `mobile:${this.mobile}, email:${this.email}`;
   }

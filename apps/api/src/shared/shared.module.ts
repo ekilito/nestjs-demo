@@ -8,7 +8,8 @@ import { IsUsernameUniqueConstraint } from './validators/user-validators'; // �
 @Global()
 @Module({
   imports: [
-    ConfigModule.forRoot({ // 加载环境变量配置
+    ConfigModule.forRoot({
+      // 加载环境变量配置
       isGlobal: true,
       envFilePath: ['.env', 'apps/api/.env'],
     }),
@@ -28,4 +29,4 @@ import { IsUsernameUniqueConstraint } from './validators/user-validators'; // �
   providers: [ConfigurationService, UserService, IsUsernameUniqueConstraint],
   exports: [ConfigurationService, UserService, IsUsernameUniqueConstraint],
 })
-export class SharedModule { }
+export class SharedModule {}

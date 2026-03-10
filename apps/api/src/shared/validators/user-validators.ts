@@ -1,4 +1,10 @@
-import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments, registerDecorator, ValidationOptions } from 'class-validator';
+import {
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+  registerDecorator,
+  ValidationOptions,
+} from 'class-validator';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
@@ -21,8 +27,12 @@ export class StartsWithConstraint implements ValidatorConstraintInterface {
   }
 }
 // 创建 StartsWith 装饰器工厂函数，用于给属性添加 'startsWith' 验证逻辑
-export function StartsWith(prefix: string, validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) { // object是CreateUserDto 类的原型
+export function StartsWith(
+  prefix: string,
+  validationOptions?: ValidationOptions,
+) {
+  return function (object: object, propertyName: string) {
+    // object是CreateUserDto 类的原型
     registerDecorator({
       target: object.constructor, // 注册装饰表的目标类 CreateUserDto
       propertyName: propertyName, // 目标属性名 username
@@ -41,7 +51,7 @@ let userRepository: Repository<User>;
 export class IsUsernameUniqueConstraint implements ValidatorConstraintInterface {
   constructor(
     @InjectRepository(User)
-    protected repository: Repository<User> // 依赖注入 
+    protected repository: Repository<User>, // 依赖注入
   ) {
     if (!userRepository) {
       userRepository = this.repository;
@@ -52,7 +62,7 @@ export class IsUsernameUniqueConstraint implements ValidatorConstraintInterface 
     // const existingUsernames = ['user_xxx', 'USER', 'GUEST']; // 模拟已存在的用户名列表 调接口
     const user = await userRepository.findOneBy({ username: value });
     return !user; // 检查用户名是否已存在
-  }
+  };
   // 定义验证失败时的默认错误消息
   defaultMessage(args: ValidationArguments) {
     return 'Username ($value) is already taken!'; // 返回错误消息，提示用户名已存在
@@ -60,7 +70,7 @@ export class IsUsernameUniqueConstraint implements ValidatorConstraintInterface 
 }
 // 创建 IsUsernameUnique 装饰器工厂函数，用于给属性添加 'isUsernameUnique' 验证逻辑
 export function IsUsernameUnique(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor, // 目标类
       propertyName: propertyName, // 目标属性名

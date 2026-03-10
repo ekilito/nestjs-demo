@@ -10,7 +10,7 @@ import { apiReference } from '@scalar/nestjs-api-reference';
 import { MyLogger } from './logger';
 import { ExtendedConsoleLogger } from './extended-console-logger';
 import { AdminExceptionFilter } from './api/filters/exception.filter';
-import { I18nValidationPipe, I18nValidationExceptionFilter } from 'nestjs-i18n';
+import { I18nValidationPipe, I18nService } from 'nestjs-i18n';
 
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
@@ -38,11 +38,10 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // ✅ 配置全局异常过滤器（处理所有异常）
-  app.useGlobalFilters(new AdminExceptionFilter());
+  app.useGlobalFilters(new AdminExceptionFilter(app.get(I18nService)));
 
   // i18n 全局验证管道
   app.useGlobalPipes(new I18nValidationPipe({ transform: true }));
-  app.useGlobalFilters(new I18nValidationExceptionFilter({ detailedErrors: false }));
 
   // ✅ 4. 解析cookie 并将其挂载到req.cookies上
   app.use(cookieParser());
@@ -60,21 +59,21 @@ async function bootstrap() {
     }),
   );
   // ✅ 5. 配置全局验证管道（自动验证 DTO 数据）
-  app.useGlobalPipes(new ValidationPipe(
-    {
+  app.useGlobalPipes(
+    new ValidationPipe({
       transform: true, // 开启自动转换（将请求数据转换为 DTO 实例）
-    }
-  ));
+    }),
+  );
 
   // ✅ 6. 配置 Swagger 文档（API 文档）
   const config = new DocumentBuilder()
-    .setTitle('CMS API')  // 设置 API 的标题
+    .setTitle('CMS API') // 设置 API 的标题
     .setDescription('The CMS API description') // 设置 API 的描述
     .setVersion('1.0') // 设置 API 的版本
-    .addTag('CMS')  // 添加一个标签，用于对 API 进行分类
+    .addTag('CMS') // 添加一个标签，用于对 API 进行分类
     .addCookieAuth('connect.sid') // 添加 Cookie 认证方式，名称为 'connect.sid'
-    .addBearerAuth({ type: 'http', scheme: 'bearer' })  // 添加 Bearer 认证方式，类型为 'http'，认证方案为 'bearer'
-    .build();    // 构建并生成最终的配置对象
+    .addBearerAuth({ type: 'http', scheme: 'bearer' }) // 添加 Bearer 认证方式，类型为 'http'，认证方案为 'bearer'
+    .build(); // 构建并生成最终的配置对象
   // 使用配置对象创建 Swagger 文档
   const document = SwaggerModule.createDocument(app, config);
   // 设置 Swagger 模块的路径和文档对象，将 Swagger UI 绑定到 '/api-doc' 路径上

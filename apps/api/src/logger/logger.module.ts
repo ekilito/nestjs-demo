@@ -6,11 +6,11 @@ import { MyLoggerService } from './my-logger.service';
     {
       provide: 'LOGGER_CONFIG',
       useValue: {
-        isEnabled: true
-      }
+        isEnabled: true,
+      },
     },
-    MyLoggerService
+    MyLoggerService,
   ],
   exports: [MyLoggerService],
 })
-export class LoggerModule { }
+export class LoggerModule {}

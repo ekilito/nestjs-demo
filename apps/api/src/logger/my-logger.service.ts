@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable } from '@nestjs/common';
 @Injectable()
 export class MyLoggerService {
   @Inject('LOGGER_CONFIG') private readonly config: any;

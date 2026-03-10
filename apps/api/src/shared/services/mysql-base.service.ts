@@ -3,14 +3,11 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { Injectable } from '@nestjs/common';
 
-// 基础 MySQL 服务类 
+// 基础 MySQL 服务类
 // 提供基础的 CRUD 操作
 @Injectable()
 export abstract class MySQLBaseService<T> {
-  constructor(
-    protected repository: Repository<any>
-  ) {
-  }
+  constructor(protected repository: Repository<any>) {}
   // 查找所有实体
   async findAll(): Promise<T[]> {
     return this.repository.find();
@@ -35,7 +32,7 @@ export abstract class MySQLBaseService<T> {
   async update(id: number, updateDto: QueryDeepPartialEntity<T>) {
     return await this.repository.update(id, updateDto);
   }
-  
+
   // 删除实体
   async delete(id: number) {
     return await this.repository.delete(id);

@@ -11,7 +11,7 @@ import * as path from 'path';
 @Module({
   imports: [
     I18nModule.forRoot({
-      fallbackLanguage: 'en', // 默认语言
+      fallbackLanguage: 'zh', // 默认语言
       loaderOptions: {
         path: path.join(__dirname, '/i18n/'), // 语言文件路径
         watch: true, // 监听语言文件变化

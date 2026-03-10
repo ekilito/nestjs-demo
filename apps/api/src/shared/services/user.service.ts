@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 export class UserService extends MySQLBaseService<User> {
   constructor(
     @InjectRepository(User) // 注入 User 实体的仓库
-    protected repository: Repository<User>
+    protected repository: Repository<User>,
   ) {
     super(repository);
   }

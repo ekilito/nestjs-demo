@@ -6,10 +6,13 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { I18nValidationException, I18nService } from 'nestjs-i18n';
+import { ValidationError } from 'class-validator';
 
 // 使用 @Catch 装饰器捕获所有 HttpException 异常
 @Catch(HttpException)
 export class AdminExceptionFilter implements ExceptionFilter {
+  constructor(private readonly i18n: I18nService) {}
   catch(exception: HttpException, host: ArgumentsHost) {
     // 实现 catch 方法，用于处理捕获的异常
     const ctx = host.switchToHttp(); // 获取当前 HTTP 请求上下文
@@ -18,7 +21,46 @@ export class AdminExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus(); // 获取异常的 HTTP 状态码
     // 初始化错误信息，默认为异常的消息
     let errorMessage = exception.message;
-    if (exception instanceof BadRequestException) {
+
+    // 处理 i18n 验证异常
+    if (exception instanceof I18nValidationException) {
+      const errors = exception.errors ?? [];
+      const messages: string[] = [];
+      const flattenErrors = (validationErrors: ValidationError[]) => {
+        validationErrors.forEach((err: ValidationError) => {
+          if (err.constraints) {
+            messages.push(...Object.values(err.constraints));
+          }
+          if (err.children && err.children.length > 0) {
+            flattenErrors(err.children);
+          }
+        });
+      };
+      flattenErrors(errors);
+      const reqWithI18n = request as Request & { i18nLang?: string };
+      const lang: string | undefined = reqWithI18n.i18nLang;
+      const translated = messages.map((msg) => {
+        if (typeof msg !== 'string') return String(msg);
+        const parts = msg.split('|', 2);
+        const key = parts[0];
+        if (parts.length === 2) {
+          try {
+            const parsed: unknown = JSON.parse(parts[1]);
+            if (parsed && typeof parsed === 'object') {
+              return this.i18n.t(key, {
+                lang,
+                args: parsed as Record<string, unknown>,
+              });
+            }
+            return this.i18n.t(key, { lang });
+          } catch {
+            return this.i18n.t(key, { lang });
+          }
+        }
+        return msg;
+      });
+      errorMessage = translated.join(', ');
+    } else if (exception instanceof BadRequestException) {
       // 获取异常的响应体
       const responseBody: any = exception.getResponse();
       // 检查响应体是否是对象并且包含 message 属性
