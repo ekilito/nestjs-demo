@@ -47,26 +47,35 @@ export class UserController {
   ) { }
 
   @Get('list')
-  @ApiOperation({ summary: '获取所有用户列表' })
+  @ApiOperation({ summary: '用户列表' })
   @ApiResponse({ status: 200, description: '成功返回用户列表', type: [User] })
-  async findAll() {
-    this.logger.log('获取所有用户列表');
-    const users = await this.userService.findAll();
-    return { users };
+  async getList() {
+    // this.logger.log('获取所有用户列表');
+    const users = await this.userService.getList();
+    return {
+      code: HttpStatus.OK,
+      message: 'success',
+      success: true,
+      data: users,
+    };
   }
 
-  @Get('findOne/:id')
+  @Get('getById/:id')
   @ApiOperation({ summary: '根据ID获取用户信息' })
   @ApiResponse({ status: 200, description: '成功返回用户信息', type: User })
   @ApiResponse({ status: 404, description: '用户未找到' })
   @ApiParam({ name: 'id', description: '用户ID', type: Number })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.findOne({
-      where: {
-        // 查找条件
-        id,
-      },
-    });
+  async getById(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.userService.getById(id);
+    if (!user) {
+      throw new HttpException('user not found', HttpStatus.NOT_FOUND);
+    }
+    return {
+      code: HttpStatus.OK,
+      message: 'success',
+      success: true,
+      data: user,
+    };
   }
 
   @Post('/create')
@@ -97,14 +106,13 @@ export class UserController {
   ) {
     const updateResult = await this.userService.update(id, updateUserDto);
     if (!updateResult.affected) {
-      throw new HttpException('用户未找到', HttpStatus.NOT_FOUND);
+      throw new HttpException('user not found', HttpStatus.NOT_FOUND);
     }
     return {
       code: HttpStatus.OK,
-      message: '用户信息更新成功',
+      message: 'success',
       success: true,
     };
-    // return Result.success('用户信息更新成功');
   }
 
   @Delete('/delete/:id')
@@ -114,12 +122,9 @@ export class UserController {
   @ApiResponse({ status: 404, description: '用户未找到' })
   async delete(@Param('id', ParseIntPipe) id: number) {
     const deleteResult = await this.userService.delete(id);
-    if (!deleteResult.affected) {
-      throw new HttpException('用户未找到', HttpStatus.NOT_FOUND);
-    }
     return {
       code: HttpStatus.OK,
-      message: '用户删除成功',
+      message: 'success',
       success: true,
     };
   }
