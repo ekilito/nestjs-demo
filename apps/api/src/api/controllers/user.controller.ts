@@ -4,7 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
   HttpStatus,
   Param,
   ParseIntPipe,
@@ -21,7 +20,6 @@ import {
   ApiParam,
   ApiBody,
   ApiTags,
-  ApiCookieAuth,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { User } from '../../shared/entities/user.entity';
@@ -42,9 +40,7 @@ import { Logger } from '@nestjs/common';
 export class UserController {
   // 日志记录器 - 用于记录控制器方法的日志
   private readonly logger = new Logger(UserController.name);
-  constructor(
-    private readonly userService: UserService,
-  ) { }
+  constructor(private readonly userService: UserService) {}
 
   @Get('list')
   @ApiOperation({ summary: '用户列表' })
@@ -67,9 +63,6 @@ export class UserController {
   @ApiParam({ name: 'id', description: '用户ID', type: Number })
   async getById(@Param('id', ParseIntPipe) id: number) {
     const user = await this.userService.getById(id);
-    if (!user) {
-      throw new HttpException('user not found', HttpStatus.NOT_FOUND);
-    }
     return {
       code: HttpStatus.OK,
       message: 'success',
@@ -118,7 +111,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: '用户删除成功', type: Result })
   @ApiResponse({ status: 404, description: '用户未找到' })
   async delete(@Param('id', ParseIntPipe) id: number) {
-    const deleteResult = await this.userService.delete(id);
+    await this.userService.delete(id);
     return {
       code: HttpStatus.OK,
       message: 'success',

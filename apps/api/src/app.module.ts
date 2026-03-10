@@ -5,7 +5,12 @@ import { ApiModule } from './api/api.module';
 import { SharedModule } from './shared/shared.module';
 import { AdminModule } from './admin/admin.module';
 import { LoggerModule } from './logger/logger.module';
-import { I18nModule, AcceptLanguageResolver, QueryResolver, HeaderResolver } from 'nestjs-i18n';
+import {
+  I18nModule,
+  AcceptLanguageResolver,
+  QueryResolver,
+  HeaderResolver,
+} from 'nestjs-i18n';
 import * as path from 'path';
 
 @Module({
@@ -18,7 +23,7 @@ import * as path from 'path';
       },
       resolvers: [
         { use: QueryResolver, options: ['lang'] }, // lang=zh-CN
-        AcceptLanguageResolver,// Accept-Language=zh-CN
+        AcceptLanguageResolver, // Accept-Language=zh-CN
         new HeaderResolver(['x-lang']), // x-lang=zh-CN
       ],
     }),
@@ -30,4 +35,4 @@ import * as path from 'path';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

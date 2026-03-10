@@ -51,7 +51,7 @@ export class IsUsernameUniqueConstraint implements ValidatorConstraintInterface 
   constructor(
     @InjectRepository(User)
     protected repository: Repository<User>, // 依赖注入
-  ) { }
+  ) {}
   // 定义异步验证逻辑，检查用户名是否唯一
   validate = async (value: any, args: ValidationArguments) => {
     // const existingUsernames = ['user_xxx', 'USER', 'GUEST']; // 模拟已存在的用户名列表 调接口

@@ -29,7 +29,11 @@ export abstract class MySQLBaseService<T> {
   /**
    * 获取分页数据
    */
-  async getPage(page: number = 1, pageSize: number = 10, options?: FindManyOptions<T>): Promise<{
+  async getPage(
+    page: number = 1,
+    pageSize: number = 10,
+    options?: FindManyOptions<T>,
+  ): Promise<{
     data: T[];
     total: number;
     page: number;
@@ -83,7 +87,7 @@ export abstract class MySQLBaseService<T> {
   async getOne(options: FindOneOptions<T>): Promise<T> {
     try {
       const entity = await this.repository.findOne(options);
-      
+
       if (!entity) {
         throw new NotFoundException('Record not found');
       }
@@ -152,10 +156,13 @@ export abstract class MySQLBaseService<T> {
   /**
    * 更新记录
    */
-  async update(id: number | string, data: QueryDeepPartialEntity<T>): Promise<T> {
+  async update(
+    id: number | string,
+    data: QueryDeepPartialEntity<T>,
+  ): Promise<T> {
     try {
       const result = await this.repository.update(id, data);
-      
+
       if (result.affected === 0) {
         throw new NotFoundException(`Record with ID ${id} not found`);
       }
@@ -170,7 +177,10 @@ export abstract class MySQLBaseService<T> {
   /**
    * 批量更新记录
    */
-  async batchUpdate(ids: (number | string)[], data: QueryDeepPartialEntity<T>): Promise<number> {
+  async batchUpdate(
+    ids: (number | string)[],
+    data: QueryDeepPartialEntity<T>,
+  ): Promise<number> {
     try {
       const result = await this.repository.update(ids, data);
       return result.affected || 0;
@@ -183,12 +193,17 @@ export abstract class MySQLBaseService<T> {
   /**
    * 根据条件更新
    */
-  async updateBy(options: FindManyOptions<T>, data: QueryDeepPartialEntity<T>): Promise<number> {
+  async updateBy(
+    options: FindManyOptions<T>,
+    data: QueryDeepPartialEntity<T>,
+  ): Promise<number> {
     try {
       const result = await this.repository.update(options.where || {}, data);
       return result.affected || 0;
     } catch (error) {
-      this.logger.error(`Failed to update records by condition: ${error.message}`);
+      this.logger.error(
+        `Failed to update records by condition: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -201,7 +216,7 @@ export abstract class MySQLBaseService<T> {
   async delete(id: number | string): Promise<void> {
     try {
       const result = await this.repository.delete(id);
-      
+
       if (result.affected === 0) {
         throw new NotFoundException(`Record with ID ${id} not found`);
       }
@@ -230,7 +245,7 @@ export abstract class MySQLBaseService<T> {
   async softDelete(id: number | string): Promise<void> {
     try {
       const result = await this.repository.softDelete(id);
-      
+
       if (result.affected === 0) {
         throw new NotFoundException(`Record with ID ${id} not found`);
       }
@@ -246,7 +261,7 @@ export abstract class MySQLBaseService<T> {
   async restore(id: number | string): Promise<void> {
     try {
       const result = await this.repository.restore(id);
-      
+
       if (result.affected === 0) {
         throw new NotFoundException(`Record with ID ${id} not found`);
       }

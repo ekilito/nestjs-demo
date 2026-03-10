@@ -27,7 +27,17 @@ import { UtilityService } from './services/utility.service'; // 引入工具服�
     }),
     TypeOrmModule.forFeature([User]), // 注册User实体类，使其在当前模块可用
   ],
-  providers: [ConfigurationService, UserService, IsUsernameUniqueConstraint, UtilityService], // 注册服务类，使其可以被注入使用
-  exports: [ConfigurationService, UserService, IsUsernameUniqueConstraint, UtilityService], // 导出服务类，使其在其他模块可用
+  providers: [
+    ConfigurationService,
+    UserService,
+    IsUsernameUniqueConstraint,
+    UtilityService,
+  ], // 注册服务类，使其可以被注入使用
+  exports: [
+    ConfigurationService,
+    UserService,
+    IsUsernameUniqueConstraint,
+    UtilityService,
+  ], // 导出服务类，使其在其他模块可用
 })
-export class SharedModule { }
+export class SharedModule {}
