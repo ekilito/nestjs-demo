@@ -18,19 +18,26 @@ export class UserService extends MySQLBaseService<User> {
   ) {
     super(repository);
   }
-  async create(createDto: DeepPartial<User>): Promise<User | User[]> {
-    const dto: any = { ...createDto };
+
+  async create(createDto: DeepPartial<User>): Promise<User> {
+    const dto = { ...createDto } as Record<string, unknown>;
     if (typeof dto.password === 'string') {
       dto.password = await this.utilityService.hashPassword(dto.password);
     }
-    const entity = this.repository.create(dto);
-    return this.repository.save(entity);
+    return await super.create(dto as DeepPartial<User>);
   }
-  async update(id: number, updateDto: QueryDeepPartialEntity<User>) {
-    const dto: any = { ...updateDto };
+
+  async update(
+    id: number | string,
+    updateDto: QueryDeepPartialEntity<User>,
+  ): Promise<User> {
+    const dto = { ...(updateDto as Record<string, unknown>) } as Record<
+      string,
+      unknown
+    >;
     if (typeof dto.password === 'string') {
       dto.password = await this.utilityService.hashPassword(dto.password);
     }
-    return await this.repository.update(id, dto);
+    return await super.update(id, dto as QueryDeepPartialEntity<User>);
   }
 }

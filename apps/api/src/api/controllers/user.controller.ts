@@ -104,10 +104,7 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    const updateResult = await this.userService.update(id, updateUserDto);
-    if (!updateResult.affected) {
-      throw new HttpException('user not found', HttpStatus.NOT_FOUND);
-    }
+    await this.userService.update(id, updateUserDto);
     return {
       code: HttpStatus.OK,
       message: 'success',
