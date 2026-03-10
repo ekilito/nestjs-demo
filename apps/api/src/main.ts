@@ -9,6 +9,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { MyLogger } from './logger';
 import { ExtendedConsoleLogger } from './extended-console-logger';
+import { AdminExceptionFilter } from './api/filters/exception.filter';
 
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
@@ -34,6 +35,9 @@ async function bootstrap() {
 
   // ✅ 3. 设置全局路由前缀（可选）
   app.setGlobalPrefix('api');
+
+  // ✅ 配置全局异常过滤器（处理所有异常）
+  app.useGlobalFilters(new AdminExceptionFilter());
 
   // ✅ 4. 解析cookie 并将其挂载到req.cookies上
   app.use(cookieParser());
