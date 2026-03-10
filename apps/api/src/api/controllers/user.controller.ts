@@ -40,7 +40,7 @@ import { Logger } from '@nestjs/common';
 export class UserController {
   // 日志记录器 - 用于记录控制器方法的日志
   private readonly logger = new Logger(UserController.name);
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get('list')
   @ApiOperation({ summary: '用户列表' })
@@ -75,13 +75,13 @@ export class UserController {
   @ApiOperation({ summary: '创建新用户' })
   @ApiBearerAuth()
   @ApiBody({ type: CreateUserDto })
-  @ApiResponse({ status: 201, description: '用户成功创建', type: User })
+  @ApiResponse({ status: 200, description: '用户成功创建', type: User })
   @ApiResponse({ status: 400, description: '请求参数错误' })
   async create(@Body() createUserDto: CreateUserDto) {
     await this.userService.create(createUserDto);
     return {
       code: HttpStatus.CREATED,
-      message: 'user created successfully',
+      message: 'success',
       success: true,
     };
   }
