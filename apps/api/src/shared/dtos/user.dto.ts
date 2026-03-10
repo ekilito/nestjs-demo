@@ -1,4 +1,4 @@
-import { IsString, Validate } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 import {
   PasswordValidators,
   IsOptionalString,
@@ -6,12 +6,9 @@ import {
   IsOptionalNumber,
   IsOptionalBoolean,
 } from '../decorators/validation-and-transform.decorators';
-import {
-  IsUsernameUnique,
-  StartsWith,
-  StartsWithConstraint,
-} from '../validators/user-validators';
+import { IsUsernameUnique, StartsWith } from '../validators/user-validators';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 // ApiProperty: 用于描述 DTO 类中的属性，生成 Swagger 文档时使用 (description: 描述, example: 示例)
 // ApiPropertyOptional: 用于描述可选属性，生成 Swagger 文档时使用
 // PartialType: 用于创建一个部分类型的 DTO 类，继承自原始类，用于更新操作
@@ -53,8 +50,9 @@ export class CreateUserDto {
   readonly is_super?: boolean;
 }
 
-export class UpdateUserDto extends CreateUserDto {
+export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiProperty({ description: '用户ID', example: 1 })
-  @IsOptionalNumber()
+  @Type(() => Number)
+  @IsNumber()
   readonly id: number;
 }

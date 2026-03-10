@@ -9,7 +9,6 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  Put,
   SerializeOptions,
   UseInterceptors,
 } from '@nestjs/common';
@@ -41,7 +40,7 @@ import { Logger } from '@nestjs/common';
 export class UserController {
   // 日志记录器 - 用于记录控制器方法的日志
   private readonly logger = new Logger(UserController.name);
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Get('list')
   @ApiOperation({ summary: '用户列表' })
@@ -73,18 +72,16 @@ export class UserController {
     };
   }
 
-  @Put('/update/:id')
+  @Post('/update')
   @ApiOperation({ summary: '编辑用户' })
-  @ApiParam({ name: 'id', description: '用户ID', type: Number })
   @ApiBody({ type: UpdateUserDto })
+  @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, description: '用户信息更新成功', type: Result })
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 404, description: '用户未找到' })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    await this.userService.update(id, updateUserDto);
+  async update(@Body() updateUserDto: UpdateUserDto) {
+    const { id, ...data } = updateUserDto;
+    await this.userService.update(id, data);
     return {
       code: HttpStatus.OK,
       message: 'success',
