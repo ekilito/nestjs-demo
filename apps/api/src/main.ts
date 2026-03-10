@@ -11,6 +11,7 @@ import { MyLogger } from './logger';
 import { ExtendedConsoleLogger } from './extended-console-logger';
 import { AdminExceptionFilter } from './api/filters/exception.filter';
 import { I18nValidationPipe, I18nService } from 'nestjs-i18n';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
@@ -22,6 +23,9 @@ async function bootstrap() {
     // bufferLogs: true, // 启用缓冲区日志记录
   });
   // app.useLogger(app.get(MyLogger));
+
+  // ✅  配置依赖注入容器（用于 class-validator 等依赖注入场景）
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   // ✅ 1. 配置静态资源目录（用于前端打包后的文件）
   app.useStaticAssets(join(__dirname, '..', 'public'), {
