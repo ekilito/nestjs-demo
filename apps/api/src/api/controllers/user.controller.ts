@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   ParseIntPipe,
@@ -56,38 +57,24 @@ export class UserController {
     };
   }
 
-  @Get('getById/:id')
-  @ApiOperation({ summary: '根据ID获取用户信息' })
-  @ApiResponse({ status: 200, description: '成功返回用户信息', type: User })
-  @ApiResponse({ status: 404, description: '用户未找到' })
-  @ApiParam({ name: 'id', description: '用户ID', type: Number })
-  async getById(@Param('id', ParseIntPipe) id: number) {
-    const user = await this.userService.getById(id);
-    return {
-      code: HttpStatus.OK,
-      message: 'success',
-      success: true,
-      data: user,
-    };
-  }
-
   @Post('/create')
-  @ApiOperation({ summary: '创建新用户' })
+  @ApiOperation({ summary: '新增用户' })
   @ApiBearerAuth()
   @ApiBody({ type: CreateUserDto })
+  @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, description: '用户成功创建', type: User })
   @ApiResponse({ status: 400, description: '请求参数错误' })
   async create(@Body() createUserDto: CreateUserDto) {
     await this.userService.create(createUserDto);
     return {
-      code: HttpStatus.CREATED,
+      code: HttpStatus.OK,
       message: 'success',
       success: true,
     };
   }
 
   @Put('/update/:id')
-  @ApiOperation({ summary: '更新用户信息' })
+  @ApiOperation({ summary: '编辑用户' })
   @ApiParam({ name: 'id', description: '用户ID', type: Number })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({ status: 200, description: '用户信息更新成功', type: Result })
@@ -116,6 +103,21 @@ export class UserController {
       code: HttpStatus.OK,
       message: 'success',
       success: true,
+    };
+  }
+
+  @Get('getById/:id')
+  @ApiOperation({ summary: '根据ID获取用户信息' })
+  @ApiResponse({ status: 200, description: '成功返回用户信息', type: User })
+  @ApiResponse({ status: 404, description: '用户未找到' })
+  @ApiParam({ name: 'id', description: '用户ID', type: Number })
+  async getById(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.userService.getById(id);
+    return {
+      code: HttpStatus.OK,
+      message: 'success',
+      success: true,
+      data: user,
     };
   }
 }
