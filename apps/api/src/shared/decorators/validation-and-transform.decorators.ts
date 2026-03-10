@@ -4,10 +4,14 @@ import { Type } from 'class-transformer';
 // IsOptional : 可选的装饰器，用于标记一个属性是可选的，即可以不传递该属性的值。
 // applyDecorators : 用于组合多个装饰器，将它们应用到同一个属性上。
 // Type : 用于转换属性的类型，将请求数据转换为指定的类型。
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 // 可选的密码装饰器
 export function PasswordValidators() {
-  return applyDecorators(IsString(), MinLength(6), MaxLength(12)); 
+  return applyDecorators(IsString(),
+    MinLength(6, { message: i18nValidationMessage('validation.minLength', { field: 'password', length: 6 }) }),
+    MaxLength(20, { message: i18nValidationMessage('validation.maxLength', { field: 'password', length: 20 }) })
+  );
 }
 // 可选的字符串装饰器
 export function IsOptionalString() {

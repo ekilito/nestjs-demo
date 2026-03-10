@@ -35,6 +35,7 @@
     "cookie-parser": "^1.4.7",
     "express-session": "^1.19.0",
     "mysql2": "^3.19.0",
+    "nestjs-i18n": "^10.6.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },

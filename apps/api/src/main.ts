@@ -10,6 +10,7 @@ import { apiReference } from '@scalar/nestjs-api-reference';
 import { MyLogger } from './logger';
 import { ExtendedConsoleLogger } from './extended-console-logger';
 import { AdminExceptionFilter } from './api/filters/exception.filter';
+import { I18nValidationPipe, I18nValidationExceptionFilter } from 'nestjs-i18n';
 
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
@@ -38,6 +39,10 @@ async function bootstrap() {
 
   // ✅ 配置全局异常过滤器（处理所有异常）
   app.useGlobalFilters(new AdminExceptionFilter());
+
+  // i18n 全局验证管道
+  app.useGlobalPipes(new I18nValidationPipe({ transform: true }));
+  app.useGlobalFilters(new I18nValidationExceptionFilter({ detailedErrors: false }));
 
   // ✅ 4. 解析cookie 并将其挂载到req.cookies上
   app.use(cookieParser());
