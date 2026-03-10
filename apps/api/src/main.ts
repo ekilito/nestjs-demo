@@ -6,6 +6,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path'; // 引入join函数 用于拼接路径
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
@@ -59,7 +60,15 @@ async function bootstrap() {
   // 使用配置对象创建 Swagger 文档
   const document = SwaggerModule.createDocument(app, config);
   // 设置 Swagger 模块的路径和文档对象，将 Swagger UI 绑定到 '/api-doc' 路径上
-  SwaggerModule.setup('api-doc', app, document);
+  // SwaggerModule.setup('api-doc', app, document);
+  app.use(
+    '/api-doc',
+    apiReference({
+      spec: {
+        content: document,
+      },
+    } as any),
+  );
 
   await app.listen(process.env.PORT ?? 3000);
 }
