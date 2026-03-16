@@ -12,7 +12,7 @@ import {
   SerializeOptions,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto } from '../../shared/dtos/user.dto';
+import { CreateUserDto, UpdateUserDto, UserPageDto } from '../../shared/dtos/user.dto';
 import { UserService } from '../../shared/services/user.service';
 import {
   ApiOperation,
@@ -25,7 +25,6 @@ import {
 import { User } from '../../shared/entities/user.entity';
 import { Result } from '../../shared/vo/result';
 import { Logger } from '@nestjs/common';
-import { UserPageDto } from '../../shared/dtos/user-page.dto';
 // ApiOperation: 用于描述控制器方法的操作，生成 Swagger 文档时使用 (summary: 摘要, description: 描述)
 // ApiResponse: 用于描述控制器方法的响应，生成 Swagger 文档时使用 (status: 状态码, description: 描述)
 // ApiParam: 用于描述控制器方法的参数，生成 Swagger 文档时使用 (name: 参数名, description: 描述)

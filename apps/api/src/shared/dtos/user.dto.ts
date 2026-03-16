@@ -6,6 +6,7 @@ import {
   IsOptionalNumber,
   IsOptionalBoolean,
 } from '../decorators/validation-and-transform.decorators';
+import { PageDto } from './page.dto';
 import { IsUsernameUnique, StartsWith } from '../validators/user-validators';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -64,4 +65,15 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @Type(() => Number)
   @IsNumber()
   readonly id: number;
+}
+
+export class UserPageDto extends PageDto {
+  @ApiPropertyOptional({ description: '用户名', example: 'admin' })
+  @IsOptionalString()
+  username?: string;
+
+  @ApiPropertyOptional({ description: '状态', example: 1 })
+  @IsOptionalNumber()
+  status?: number;
+
 }
