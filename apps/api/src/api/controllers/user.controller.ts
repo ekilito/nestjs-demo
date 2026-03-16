@@ -98,7 +98,7 @@ export class UserController {
   }
 
   @Get('getById/:id')
-  @ApiOperation({ summary: '根据ID获取用户信息' })
+  @ApiOperation({ summary: '用户详情' })
   @ApiResponse({ status: 200, description: '成功返回用户信息', type: User })
   @ApiResponse({ status: 404, description: '用户未找到' })
   @ApiParam({ name: 'id', description: '用户ID', type: Number })
