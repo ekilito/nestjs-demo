@@ -13,7 +13,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from '../../shared/dtos/user.dto';
-import { PageDto } from '../../shared/dtos/page.dto';
 import { UserService } from '../../shared/services/user.service';
 import {
   ApiOperation,
@@ -26,6 +25,7 @@ import {
 import { User } from '../../shared/entities/user.entity';
 import { Result } from '../../shared/vo/result';
 import { Logger } from '@nestjs/common';
+import { UserPageDto } from '../../shared/dtos/user-page.dto';
 // ApiOperation: 用于描述控制器方法的操作，生成 Swagger 文档时使用 (summary: 摘要, description: 描述)
 // ApiResponse: 用于描述控制器方法的响应，生成 Swagger 文档时使用 (status: 状态码, description: 描述)
 // ApiParam: 用于描述控制器方法的参数，生成 Swagger 文档时使用 (name: 参数名, description: 描述)
@@ -41,7 +41,7 @@ import { Logger } from '@nestjs/common';
 export class UserController {
   // 日志记录器 - 用于记录控制器方法的日志
   private readonly logger = new Logger(UserController.name);
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get('list')
   @ApiOperation({ summary: '用户列表' })
@@ -59,11 +59,14 @@ export class UserController {
 
   @Post('page')
   @ApiOperation({ summary: '用户分页' })
-  @ApiBody({ type: PageDto })
-  @ApiResponse({ status: 200, description: '成功返回用户分页列表' })
-  async getPage(@Body() pageDto: PageDto) {
-    const { pageNum = 1, pageSize = 10 } = pageDto;
-    const data = await this.userService.getPage(pageNum, pageSize);
+  @ApiBody({ type: UserPageDto })
+  @ApiResponse({ status: 200, description: '成功返回用户分页列表', type: [User] })
+  async getPage(@Body() pageDto: UserPageDto) {
+    const { pageNum = 1, pageSize = 10, username } = pageDto;
+    const data = await this.userService.getPage(pageNum, pageSize, {
+      username,
+      status: pageDto.status,
+    });
     return {
       code: HttpStatus.OK,
       message: 'success',
