@@ -46,6 +46,7 @@ async function bootstrap() {
 
   // i18n 全局验证管道
   app.useGlobalPipes(new I18nValidationPipe({ transform: true }));
+  //app.useGlobalFilters(new I18nValidationExceptionFilter({ detailedErrors: false }));
 
   // ✅ 4. 解析cookie 并将其挂载到req.cookies上
   app.use(cookieParser());

@@ -30,18 +30,17 @@ export abstract class MySQLBaseService<T> {
    * 获取分页数据
    */
   async getPage(
-    page: number = 1,
-    pageSize: number = 10,
+    pageNum: number = 1, // 当前页码（默认第1页）
+    pageSize: number = 10, // 每页记录数（默认10条）
     options?: FindManyOptions<T>,
   ): Promise<{
     data: T[];
-    total: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
+    total: number; // 总记录数
+    size: number; // 每页记录数
+    pages: number; // 总页数
   }> {
     try {
-      const skip = (page - 1) * pageSize;
+      const skip = (pageNum - 1) * pageSize;
       const [data, total] = await this.repository.findAndCount({
         ...options,
         skip,
@@ -51,9 +50,8 @@ export abstract class MySQLBaseService<T> {
       return {
         data,
         total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize),
+        size: pageSize, // 每页记录数
+        pages: Math.ceil(total / pageSize), // 总页数
       };
     } catch (error) {
       this.logger.error(`Failed to get page: ${error.message}`);
