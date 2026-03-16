@@ -9,6 +9,7 @@ import {
 import { IsUsernameUnique, StartsWith } from '../validators/user-validators';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+// import { PartialType } from '@nestjs/mapped-types'; 
 // ApiProperty: 用于描述 DTO 类中的属性，生成 Swagger 文档时使用 (description: 描述, example: 示例)
 // ApiPropertyOptional: 用于描述可选属性，生成 Swagger 文档时使用
 // PartialType: 用于创建一个部分类型的 DTO 类，继承自原始类，用于更新操作
