@@ -13,6 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from '../../shared/dtos/user.dto';
+import { PageDto } from '../../shared/dtos/page.dto';
 import { UserService } from '../../shared/services/user.service';
 import {
   ApiOperation,
@@ -40,7 +41,7 @@ import { Logger } from '@nestjs/common';
 export class UserController {
   // 日志记录器 - 用于记录控制器方法的日志
   private readonly logger = new Logger(UserController.name);
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Get('list')
   @ApiOperation({ summary: '用户列表' })
@@ -58,17 +59,16 @@ export class UserController {
 
   @Post('page')
   @ApiOperation({ summary: '用户分页' })
-  @ApiResponse({ status: 200, description: '成功返回用户分页列表', type: [User] })
-  async getPage(
-    @Body() pageDto: { pageNum: number; pageSize: number },
-  ) {
-    const { pageNum, pageSize } = pageDto;
-    const users = await this.userService.getPage(pageNum, pageSize);
+  @ApiBody({ type: PageDto })
+  @ApiResponse({ status: 200, description: '成功返回用户分页列表' })
+  async getPage(@Body() pageDto: PageDto) {
+    const { pageNum = 1, pageSize = 10 } = pageDto;
+    const data = await this.userService.getPage(pageNum, pageSize);
     return {
       code: HttpStatus.OK,
       message: 'success',
       success: true,
-      data: users,
+      data,
     };
   }
 

@@ -9,7 +9,7 @@ import {
 import { IsUsernameUnique, StartsWith } from '../validators/user-validators';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-// import { PartialType } from '@nestjs/mapped-types'; 
+// import { PartialType } from '@nestjs/mapped-types';
 // ApiProperty: 用于描述 DTO 类中的属性，生成 Swagger 文档时使用 (description: 描述, example: 示例)
 // ApiPropertyOptional: 用于描述可选属性，生成 Swagger 文档时使用
 // PartialType: 用于创建一个部分类型的 DTO 类，继承自原始类，用于更新操作
@@ -42,15 +42,19 @@ export class CreateUserDto {
   @EmailValidators()
   readonly email?: string;
 
-  @ApiPropertyOptional({ description: '用户状态', example: 1 })
+  @ApiPropertyOptional({ description: '用户状态', example: 1, default: 1 })
   @IsOptionalNumber()
   readonly status?: number;
 
-  @ApiPropertyOptional({ description: '是否为超级管理员', example: true })
+  @ApiPropertyOptional({
+    description: '是否为超级管理员',
+    example: true,
+    default: false,
+  })
   @IsOptionalBoolean()
   readonly is_super?: boolean;
 
-  @ApiPropertyOptional({ description: '排序编号', example: 100 })
+  @ApiPropertyOptional({ description: '排序编号', example: 100, default: 100 })
   @IsOptionalNumber()
   readonly sort?: number;
 }

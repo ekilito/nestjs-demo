@@ -34,21 +34,21 @@ export abstract class MySQLBaseService<T> {
     pageSize: number = 10, // 每页记录数（默认10条）
     options?: FindManyOptions<T>,
   ): Promise<{
-    data: T[];
+    records: T[];
     total: number; // 总记录数
     size: number; // 每页记录数
     pages: number; // 总页数
   }> {
     try {
       const skip = (pageNum - 1) * pageSize;
-      const [data, total] = await this.repository.findAndCount({
+      const [records, total] = await this.repository.findAndCount({
         ...options,
         skip,
         take: pageSize,
       });
 
       return {
-        data,
+        records,
         total,
         size: pageSize, // 每页记录数
         pages: Math.ceil(total / pageSize), // 总页数

@@ -19,7 +19,11 @@ import { i18nValidationMessage } from 'nestjs-i18n';
 export function PasswordValidators() {
   return applyDecorators(
     IsString(),
-    IsNotEmpty({ message: i18nValidationMessage('validation.isNotEmpty', { field: 'password' }) }),
+    IsNotEmpty({
+      message: i18nValidationMessage('validation.isNotEmpty', {
+        field: 'password',
+      }),
+    }),
     MinLength(6, {
       message: i18nValidationMessage('validation.minLength', {
         field: 'password',
