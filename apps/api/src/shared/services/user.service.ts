@@ -13,23 +13,23 @@ import { UtilityService } from './utility.service';
 export class UserService extends MySQLBaseService<User> {
   constructor(
     @InjectRepository(User) // 注入 User 实体的仓库
-    protected repository: Repository<User>,
-    private readonly utilityService: UtilityService,
+    protected repository: Repository<User>, // 用户实体的仓库实例，可在子类访问
+    private readonly utilityService: UtilityService, // 密码加密服务，用于对密码进行哈希处理
   ) {
-    super(repository);
+    super(repository); // 调用父类构造函数，初始化仓库实例
   }
 
-  async create(createDto: DeepPartial<User>): Promise<User> {
-    const dto = { ...createDto } as Record<string, unknown>;
+  async create(createDto: DeepPartial<User>): Promise<User> { // DeepPartial<User>类型，允许只传递部分User属性
+    const dto = { ...createDto } as Record<string, unknown>; // 创建createDto的副本 类型断言便于操作属性
     if (typeof dto.password === 'string') {
-      dto.password = await this.utilityService.hashPassword(dto.password);
+      dto.password = await this.utilityService.hashPassword(dto.password); // 对密码进行哈希处理
     }
-    return await super.create(dto as DeepPartial<User>);
+    return await super.create(dto as DeepPartial<User>); // 调用父类方法创建用户
   }
 
   async update(
     id: number | string,
-    updateDto: QueryDeepPartialEntity<User>,
+    updateDto: QueryDeepPartialEntity<User>, // 更新用户的部分属性
   ): Promise<User> {
     const dto = { ...(updateDto as Record<string, unknown>) } as Record<
       string,
@@ -38,20 +38,18 @@ export class UserService extends MySQLBaseService<User> {
     if (typeof dto.password === 'string') {
       dto.password = await this.utilityService.hashPassword(dto.password);
     }
-    return await super.update(id, dto as QueryDeepPartialEntity<User>);
+    return await super.update(id, dto as QueryDeepPartialEntity<User>); // 调用父类方法更新用户
   }
 
+  // 分页查询方法，重写父类方法
   async getPage(
     pageNum: number = 1,
     pageSize: number = 10,
     third?: // 分页查询参数，支持 TypeORM 的 FindManyOptions 或自定义查询参数
-      | FindManyOptions<User> 
+      | FindManyOptions<User> // TypeORM 查询选项，用于自定义查询
       | {
         username?: string;
-        email?: string;
-        mobile?: string;
         status?: number;
-        is_super?: boolean;
       },
   ) {
     const isFindOptions =
@@ -64,26 +62,17 @@ export class UserService extends MySQLBaseService<User> {
 
     const q = (third ?? {}) as {
       username?: string;
-      email?: string;
-      mobile?: string;
       status?: number;
-      is_super?: boolean;
     };
 
-    const where: FindOptionsWhere<User> = {};
+    const where: FindOptionsWhere<User> = {}; // 创建查询条件对象
+    // 创建查询条件对象 如果有值，添加模糊查询条件
     const username = typeof q.username === 'string' ? q.username.trim() : '';
     if (username) where.username = Like(`%${username}%`);
-    const email = typeof q.email === 'string' ? q.email.trim() : '';
-    if (email) where.email = Like(`%${email}%`);
-    const mobile = typeof q.mobile === 'string' ? q.mobile.trim() : '';
-    if (mobile) where.mobile = Like(`%${mobile}%`);
     if (typeof q.status === 'number' && !Number.isNaN(q.status)) {
       where.status = q.status;
     }
-    if (typeof q.is_super === 'boolean') {
-      where.is_super = q.is_super;
-    }
-
+  
     return super.getPage(pageNum, pageSize, {
       where: Object.keys(where).length > 0 ? where : undefined,
     });
