@@ -51,16 +51,21 @@ export class IsUsernameUniqueConstraint implements ValidatorConstraintInterface 
   constructor(
     @InjectRepository(User)
     protected repository: Repository<User>, // 依赖注入
-  ) {}
+  ) { }
   // 定义异步验证逻辑，检查用户名是否唯一
   validate = async (value: any, args: ValidationArguments) => {
     // const existingUsernames = ['user_xxx', 'USER', 'GUEST']; // 模拟已存在的用户名列表 调接口
     if (typeof value !== 'string' || value.length === 0) return true;
 
     const obj = (args.object ?? {}) as { id?: unknown };
-    const id = obj.id as any;
+    const id = obj.id;
+    // 如果 id 存在且有效（非 NaN 数字），则执行以下逻辑
+    if (typeof id === 'number' && !Number.isNaN(id)) {
+      // 查找当前用户是否存在
+      const current = await this.repository.findOneBy({ id });
+      if (!current) return true;
 
-    if (id !== undefined && id !== null && id !== '') {
+      // 查找是否存在其他用户使用相同的用户名
       const user = await this.repository.findOne({
         where: {
           username: value,
