@@ -12,6 +12,7 @@ import { ExtendedConsoleLogger } from './extended-console-logger';
 import { AdminExceptionFilter } from './api/filters/exception.filter';
 import { I18nValidationPipe, I18nService } from 'nestjs-i18n';
 import { useContainer } from 'class-validator';
+import { SuccessResponseInterceptor } from './shared/interceptors/success-response.interceptor';
 
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
@@ -43,6 +44,8 @@ async function bootstrap() {
 
   // ✅ 配置全局异常过滤器（处理所有异常）
   app.useGlobalFilters(new AdminExceptionFilter(app.get(I18nService)));
+
+  app.useGlobalInterceptors(new SuccessResponseInterceptor());
 
   // i18n 全局验证管道
   app.useGlobalPipes(new I18nValidationPipe({ transform: true }));

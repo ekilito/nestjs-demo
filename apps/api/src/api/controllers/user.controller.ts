@@ -47,13 +47,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: '成功返回用户列表', type: [User] })
   async getList() {
     // this.logger.log('获取所有用户列表');
-    const users = await this.userService.getList();
-    return {
-      code: HttpStatus.OK,
-      message: 'success',
-      success: true,
-      data: users,
-    };
+    return await this.userService.getList();
   }
 
   @Post('page')
@@ -62,16 +56,10 @@ export class UserController {
   @ApiResponse({ status: 200, description: '成功返回用户分页列表', type: [User] })
   async getPage(@Body() pageDto: UserPageDto) {
     const { pageNum = 1, pageSize = 10, username } = pageDto;
-    const data = await this.userService.getPage(pageNum, pageSize, {
+    return await this.userService.getPage(pageNum, pageSize, {
       username,
       status: pageDto.status,
     });
-    return {
-      code: HttpStatus.OK,
-      message: 'success',
-      success: true,
-      data,
-    };
   }
 
   @Post('/create')
@@ -83,11 +71,7 @@ export class UserController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   async create(@Body() createUserDto: CreateUserDto) {
     await this.userService.create(createUserDto);
-    return {
-      code: HttpStatus.OK,
-      message: 'success',
-      success: true,
-    };
+    return null;
   }
 
   @Post('/update')
@@ -100,11 +84,7 @@ export class UserController {
   async update(@Body() updateUserDto: UpdateUserDto) {
     const { id, ...data } = updateUserDto;
     await this.userService.update(id, data);
-    return {
-      code: HttpStatus.OK,
-      message: 'success',
-      success: true,
-    };
+    return null;
   }
 
   @Delete('/delete/:id')
@@ -114,11 +94,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: '用户未找到' })
   async delete(@Param('id', ParseIntPipe) id: number) {
     await this.userService.delete(id);
-    return {
-      code: HttpStatus.OK,
-      message: 'success',
-      success: true,
-    };
+    return null;
   }
 
   @Get('getById/:id')
@@ -127,13 +103,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: '用户未找到' })
   @ApiParam({ name: 'id', description: '用户ID', type: Number })
   async getById(@Param('id', ParseIntPipe) id: number) {
-    const user = await this.userService.getById(id);
-    return {
-      code: HttpStatus.OK,
-      message: 'success',
-      success: true,
-      data: user,
-    };
+    return await this.userService.getById(id);
   }
 }
 
