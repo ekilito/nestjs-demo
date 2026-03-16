@@ -4,23 +4,32 @@ import {
   ArgumentsHost,
   HttpException,
   BadRequestException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { I18nValidationException, I18nService } from 'nestjs-i18n';
 import { ValidationError } from 'class-validator';
 
 // 使用 @Catch 装饰器捕获所有 HttpException 异常
-@Catch(HttpException)
+@Catch()
 export class AdminExceptionFilter implements ExceptionFilter {
-  constructor(private readonly i18n: I18nService) {}
-  catch(exception: HttpException, host: ArgumentsHost) {
+  constructor(private readonly i18n: I18nService) { }
+  catch(exception: unknown, host: ArgumentsHost) {
     // 实现 catch 方法，用于处理捕获的异常
     const ctx = host.switchToHttp(); // 获取当前 HTTP 请求上下文
     const response = ctx.getResponse<Response>(); // 获取 HTTP 响应对象
     const request = ctx.getRequest<Request>();
-    const status = exception.getStatus(); // 获取异常的 HTTP 状态码
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
     // 初始化错误信息，默认为异常的消息
-    let errorMessage = exception.message;
+    let errorMessage =
+      exception instanceof HttpException
+        ? exception.message
+        : exception instanceof Error
+          ? exception.message
+          : String(exception);
 
     // 处理 i18n 验证异常
     if (exception instanceof I18nValidationException) {
@@ -62,21 +71,30 @@ export class AdminExceptionFilter implements ExceptionFilter {
       errorMessage = translated.join(', ');
     } else if (exception instanceof BadRequestException) {
       // 获取异常的响应体
-      const responseBody: any = exception.getResponse();
+      const responseBody: unknown = exception.getResponse();
       // 检查响应体是否是对象并且包含 message 属性
-      if (typeof responseBody === 'object' && responseBody.message) {
+      if (
+        responseBody &&
+        typeof responseBody === 'object' &&
+        'message' in responseBody
+      ) {
+        const msg = (responseBody as { message?: unknown }).message;
         // 如果 message 是数组，则将其拼接成字符串，否则直接使用 message
-        errorMessage = Array.isArray(responseBody.message)
-          ? responseBody.message.join(', ')
-          : responseBody.message;
+        if (Array.isArray(msg)) {
+          errorMessage = msg.map((v) => String(v)).join(', ');
+        } else if (typeof msg === 'string') {
+          errorMessage = msg;
+        } else if (msg != null) {
+          errorMessage = String(msg);
+        }
       }
     }
     return response.status(status).json({
       code: status,
       success: false,
       message: errorMessage,
-      path: request.originalUrl ?? request.url,
-      timestamp: new Date().toISOString(),
+      // path: request.originalUrl ?? request.url,
+      // timestamp: new Date().toISOString(),
     });
   }
 }
