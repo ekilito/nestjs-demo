@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ApiModule } from './api/api.module';
 import { SharedModule } from './shared/shared.module';
-import { AdminModule } from './admin/admin.module';
 import { LoggerModule } from './logger/logger.module';
 import {
   I18nModule,
@@ -29,7 +28,6 @@ import * as path from 'path';
     }),
     ApiModule,
     SharedModule,
-    AdminModule,
     LoggerModule,
   ],
   controllers: [AppController],
