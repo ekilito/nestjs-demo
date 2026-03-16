@@ -48,6 +48,10 @@ export class CreateUserDto {
   @ApiPropertyOptional({ description: '是否为超级管理员', example: true })
   @IsOptionalBoolean()
   readonly is_super?: boolean;
+
+  @ApiPropertyOptional({ description: '排序编号', example: 100 })
+  @IsOptionalNumber()
+  readonly sort?: number;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {

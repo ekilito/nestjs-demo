@@ -8,7 +8,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 
 // 定义一个自定义验证器，名为 'startsWith'，不需要异步验证
 @ValidatorConstraint({ name: 'startsWith', async: false })
@@ -51,15 +51,30 @@ export class IsUsernameUniqueConstraint implements ValidatorConstraintInterface 
   constructor(
     @InjectRepository(User)
     protected repository: Repository<User>, // 依赖注入
-  ) {}
+  ) { }
   // 定义异步验证逻辑，检查用户名是否唯一
   validate = async (value: any, args: ValidationArguments) => {
     // const existingUsernames = ['user_xxx', 'USER', 'GUEST']; // 模拟已存在的用户名列表 调接口
+    if (typeof value !== 'string' || value.length === 0) return true;
+
+    const obj = (args.object ?? {}) as { id?: unknown };
+    const id = obj.id as any;
+
+    if (id !== undefined && id !== null && id !== '') {
+      const user = await this.repository.findOne({
+        where: {
+          username: value,
+          id: Not(id),
+        },
+      });
+      return !user;
+    }
+
     const user = await this.repository.findOneBy({ username: value });
-    return !user; // 检查用户名是否已存在
+    return !user;
   };
   // 定义验证失败时的默认错误消息
-  defaultMessage(args: ValidationArguments) {
+  defaultMessage() {
     return 'Username ($value) is already taken!'; // 返回错误消息，提示用户名已存在
   }
 }
