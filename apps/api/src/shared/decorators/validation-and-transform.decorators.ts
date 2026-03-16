@@ -7,6 +7,7 @@ import {
   IsEmail,
   MinLength,
   MaxLength,
+  IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 // IsOptional : 可选的装饰器，用于标记一个属性是可选的，即可以不传递该属性的值。
@@ -18,6 +19,7 @@ import { i18nValidationMessage } from 'nestjs-i18n';
 export function PasswordValidators() {
   return applyDecorators(
     IsString(),
+    IsNotEmpty({ message: i18nValidationMessage('validation.isNotEmpty', { field: 'password' }) }),
     MinLength(6, {
       message: i18nValidationMessage('validation.minLength', {
         field: 'password',
