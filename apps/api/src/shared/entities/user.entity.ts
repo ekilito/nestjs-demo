@@ -15,15 +15,15 @@ import { Exclude, Expose, Transform } from 'class-transformer';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn() // 主键 - 自增
-  @ApiProperty({ description: '用户ID', example: 1 })
+  @ApiProperty({ description: '用户ID', example: 1 }) // 返回的scheme示例中显示
   id: number;
 
-  @Column({ length: 50, unique: true })
+  @Column({ length: 50, unique: true })  // 长度50，唯一约束
   @ApiProperty({ description: '用户名', example: 'john_doe' })
   username: string;
 
   @Column()
-  @Exclude() // 排除在序列化之外
+  @Exclude() /// 👈 关键：序列化时排除这个字段 返回用户对象时，密码不会被包含
   @ApiHideProperty() // 隐藏密码字段，不在Swagger文档中显示
   password: string;
 
@@ -45,7 +45,7 @@ export class User {
   })
   email: string;
 
-  @Expose()
+  @Expose() // 👈 即使没有数据库字段，也会在序列化时出现 确保它在序列化时被包含
   @ApiProperty({
     description: '联系方式',
     example: 'mobile:123****7890, email:john.doe@example.com',

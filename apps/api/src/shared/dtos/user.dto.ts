@@ -8,7 +8,7 @@ import {
 } from '../decorators/validation-and-transform.decorators';
 import { PageDto } from './page.dto';
 import { IsUsernameUnique, StartsWith } from '../validators/user-validators';
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'; // 请求示例文档
 import { Type } from 'class-transformer';
 // import { PartialType } from '@nestjs/mapped-types';
 // ApiProperty: 用于描述 DTO 类中的属性，生成 Swagger 文档时使用 (description: 描述, example: 示例)
