@@ -6,6 +6,8 @@ import { User } from './entities/user.entity';
 import { UserService } from './services/user.service';
 import { IsUsernameUniqueConstraint } from './validators/user-validators'; // 引入自定义验证器
 import { UtilityService } from './services/utility.service'; // 引入工具服务
+import { Role } from './entities/role.entity';
+import { RoleService } from './services/role.service';
 @Global()
 @Module({
   imports: [
@@ -25,19 +27,21 @@ import { UtilityService } from './services/utility.service'; // 引入工具服�
         logging: false, // 关闭SQL日志输出（生产环境建议开启）
       }),
     }),
-    TypeOrmModule.forFeature([User]), // 注册User实体类，使其在当前模块可用
+    TypeOrmModule.forFeature([User, Role]), // 注册User实体类，使其在当前模块可用
   ],
   providers: [
     ConfigurationService,
     UserService,
     IsUsernameUniqueConstraint,
     UtilityService,
+    RoleService,
   ], // 注册服务类，使其可以被注入使用
   exports: [
     ConfigurationService,
     UserService,
     IsUsernameUniqueConstraint,
     UtilityService,
+    RoleService,
   ], // 导出服务类，使其在其他模块可用
 })
-export class SharedModule {}
+export class SharedModule { }
