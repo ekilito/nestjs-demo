@@ -1,4 +1,4 @@
-import { ApiProperty, PartialType as PartialTypeFromSwagger } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType as PartialTypeFromSwagger } from '@nestjs/swagger';
 import { IsString, IsOptional, IsNumber } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
@@ -40,7 +40,8 @@ export class UpdateRoleDto extends PartialTypeFromSwagger(PartialType(CreateRole
 
 export class RolePageDto extends PageDto {
   @IsString()
-  @IsOptional()
-  @ApiProperty({ description: '名称', example: 'name' })
+  @IsOptional() // 运行时验证	class-validator 验证时跳过空值！！！
+  // Swagger 中标记为可选
+  @ApiPropertyOptional({ description: '名称', example: 'name' })
   name: string;
 }
