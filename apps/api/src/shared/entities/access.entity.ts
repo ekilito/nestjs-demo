@@ -23,8 +23,8 @@ export class Access {
   }
 
   @Column({ length: 50, unique: true })
-  @ApiProperty({ description: '名称', example: 'name' })
-  name: string;
+  @ApiProperty({ description: '资源名称', example: 'accessName' })
+  accessName: string;
 
   @Column({ default: 1 })
   @ApiProperty({ description: '生效状态', example: 1 })
