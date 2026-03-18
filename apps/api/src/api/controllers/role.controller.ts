@@ -38,8 +38,8 @@ export class RoleController {
   @ApiBody({ type: CreateRoleDto })
   @ApiResponse({ status: 200, description: '成功创建角色', type: Result })
   async create(@Body() createRoleDto: CreateRoleDto) {
-    const data = await this.roleService.create(createRoleDto);
-    return Result.ok(data, '创建成功');
+    await this.roleService.create(createRoleDto);
+    return null;
   }
 
   @Post('update')
@@ -48,8 +48,8 @@ export class RoleController {
   @ApiResponse({ status: 200, description: '成功更新角色', type: Result })
   async update(@Body() updateRoleDto: UpdateRoleDto) {
     const { id, ...rest } = updateRoleDto;
-    const data = await this.roleService.update(id, rest);
-    return Result.ok(data, '更新成功');
+    await this.roleService.update(id, rest);
+    return null;
   }
 
   @Delete('delete/:id')
@@ -58,6 +58,6 @@ export class RoleController {
   @ApiResponse({ status: 200, description: '成功删除角色', type: Result })
   async delete(@Param('id', ParseIntPipe) id: number) {
     await this.roleService.delete(id);
-    return Result.ok(null, '删除成功');
+    return null;
   }
 }

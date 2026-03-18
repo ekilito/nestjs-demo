@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional, PartialType as PartialTypeFromSwagger } from '@nestjs/swagger';
 import { IsString, IsOptional, IsNumber } from 'class-validator';
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/mapped-types'; 
 import { Type } from 'class-transformer';
 import { PageDto } from './page.dto';
 
@@ -22,7 +22,7 @@ export class CreateRoleDto {
   sort: number;
 }
 
-export class UpdateRoleDto extends PartialTypeFromSwagger(PartialType(CreateRoleDto)) {
+export class UpdateRoleDto extends PartialTypeFromSwagger(CreateRoleDto) {
   @IsNumber()
   @ApiProperty({ description: 'ID', example: 1 })
   id: number;
