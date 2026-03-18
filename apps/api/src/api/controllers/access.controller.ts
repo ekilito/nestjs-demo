@@ -52,10 +52,18 @@ export class AccessController {
 
   @Delete('delete/:id')
   @ApiOperation({ summary: '删除资源' })
-  @ApiParam({ name: 'id', description: '资源ID', type: Number })
+  @ApiParam({ name: 'id', description: '资源ID', type: String })
   @ApiResponse({ status: 200, description: '成功删除资源', type: Result })
-  async delete(@Param('id', ParseIntPipe) id: string) {
+  async delete(@Param('id') id: string) {
     await this.accessService.delete(id);
     return null;
+  }
+
+  @Get('detail/:id')
+  @ApiOperation({ summary: '资源详情' })
+  @ApiParam({ name: 'id', description: '资源ID', type: String })
+  @ApiResponse({ status: 200, description: '成功返回资源详情', type: Access })
+  async getDetail(@Param('id') id: string) {
+    return await this.accessService.getById(id);
   }
 }
