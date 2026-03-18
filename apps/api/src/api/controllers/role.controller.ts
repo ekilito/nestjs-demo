@@ -28,9 +28,7 @@ export class RoleController {
   @ApiBody({ type: RolePageDto })
   @ApiResponse({ status: 200, description: '成功返回角色分页列表', type: [Role] })
   async getPage(@Body() pageDto: RolePageDto) {
-    const { pageNum = 1, pageSize = 10, name } = pageDto;
-    return await this.roleService.getPage(pageNum, pageSize, {
-      name,
-    });
+    const { pageNum = 1, pageSize = 10, ...query } = pageDto;
+    return await this.roleService.getPageByQuery(pageNum, pageSize, query);
   }
 }

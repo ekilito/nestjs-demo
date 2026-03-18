@@ -1,4 +1,4 @@
-import { Repository, FindOneOptions, FindManyOptions } from 'typeorm';
+import { Repository, FindOneOptions, FindManyOptions, FindOptionsWhere, Like } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
@@ -52,6 +52,57 @@ export abstract class MySQLBaseService<T> {
         total,
         size: pageSize, // 每页记录数
         pages: Math.ceil(total / pageSize), // 总页数
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get page: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getPageByQuery(
+    pageNum: number = 1,
+    pageSize: number = 10,
+    query?: Record<string, any>, // 关键：通用查询对象
+  ): Promise<{
+    records: T[];
+    total: number;
+    size: number;
+    pages: number;
+  }> {
+    try {
+      // 告诉数据库从哪一条开始查
+      const skip = (pageNum - 1) * pageSize;
+      // 创建 where 条件对象
+      const where: FindOptionsWhere<T> = {};
+
+      if (query) { // 处理查询参数
+        Object.keys(query).forEach((key) => {
+          const value = query[key];
+          // 跳过 undefined、null、空字符串
+          if (value === undefined || value === null || value === '') return;
+
+          // ⭐ 字符串 → 模糊查询
+          if (typeof value === 'string') {
+            where[key] = Like(`%${value.trim()}%`);
+          }
+          // ⭐ 数字 / 布尔 → 精确查询
+          else {
+            where[key] = value;
+          }
+        });
+      }
+
+      const [records, total] = await this.repository.findAndCount({
+        where,
+        skip,
+        take: pageSize,
+      });
+
+      return {
+        records,
+        total,
+        size: pageSize,
+        pages: Math.ceil(total / pageSize),
       };
     } catch (error) {
       this.logger.error(`Failed to get page: ${error.message}`);
