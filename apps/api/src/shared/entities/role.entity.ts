@@ -4,8 +4,8 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 @Entity()
 export class Role {
   @PrimaryGeneratedColumn() // 主键自增
-  @ApiProperty({ description: 'ID', example: 1 })
-  id: number;
+  @ApiProperty({ description: 'ID', example: '12345678901234567890' })
+  id: string;
 
   @Column({ length: 50, unique: true })
   @ApiProperty({ description: '名称', example: 'name' })
