@@ -13,9 +13,8 @@ import {
 import { generateSnowflakeId } from '../utils/snowflake';
 import { AccessType } from '../dtos/access.dto';
 
-
 @Entity()
-@Tree("materialized-path") // materialized-path 表示使用物化路径存储树结构
+@Tree('materialized-path') // materialized-path 表示使用物化路径存储树结构
 export class Access {
   @PrimaryColumn({ type: 'bigint' })
   @ApiProperty({ description: 'ID', example: '12345678901234567890' })
@@ -51,7 +50,7 @@ export class Access {
   // 👉 ✅ 只保留 parent: Access 就够了 这是 TypeORM 树结构模型，它内部会自动帮你维护：parent: Access 本质上就已经包含了 parentId
   @TreeParent() // TreeParent 表示该字段是树结构的父节点
   @ApiProperty({ description: '父资源', type: () => Access })
-  parent: Access;
+  parent: Access | null;
 
   @Column({ default: 1 })
   @ApiProperty({ description: '生效状态', example: 1 })
