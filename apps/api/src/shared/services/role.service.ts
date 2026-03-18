@@ -23,7 +23,6 @@ export class RoleService extends MySQLBaseService<Role> {
       | FindManyOptions<Role> // TypeORM 查询选项，用于自定义查询
       | {
         name?: string;
-        status?: number;
       },
   ) {
     const isFindOptions =
@@ -36,16 +35,12 @@ export class RoleService extends MySQLBaseService<Role> {
 
     const q = (third ?? {}) as {
       name?: string;
-      status?: number;
     };
 
     const where: FindOptionsWhere<Role> = {}; // 创建查询条件对象
     // 创建查询条件对象 如果有值，添加模糊查询条件
     const name = typeof q.name === 'string' ? q.name.trim() : '';
     if (name) where.name = Like(`%${name}%`);
-    if (typeof q.status === 'number' && !Number.isNaN(q.status)) {
-      where.status = q.status;
-    }
 
     return super.getPage(pageNum, pageSize, {
       where: Object.keys(where).length > 0 ? where : undefined,

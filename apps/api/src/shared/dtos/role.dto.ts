@@ -2,6 +2,7 @@ import { ApiProperty, PartialType as PartialTypeFromSwagger } from '@nestjs/swag
 import { IsString, IsOptional, IsNumber } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
+import { PageDto } from './page.dto';
 
 export class CreateRoleDto {
   @IsString()
@@ -35,4 +36,11 @@ export class UpdateRoleDto extends PartialTypeFromSwagger(PartialType(CreateRole
   @ApiProperty({ description: '密码', example: '666666' })
   @IsOptional()
   password: string;
+}
+
+export class RolePageDto extends PageDto {
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ description: '名称', example: 'name' })
+  name: string;
 }
