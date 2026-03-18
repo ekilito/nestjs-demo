@@ -1,9 +1,9 @@
-import { Controller, UseFilters, UseInterceptors, SerializeOptions, ClassSerializerInterceptor, Logger, Get, Body, Post } from '@nestjs/common';
+import { Controller, UseFilters, UseInterceptors, SerializeOptions, ClassSerializerInterceptor, Logger, Get, Body, Post, Delete, Param, ParseIntPipe } from '@nestjs/common';
 import { RoleService } from '../../shared/services/role.service';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdminExceptionFilter } from '../filters/exception.filter';
 import { Role } from '../../shared/entities/role.entity';
-import { RolePageDto } from '../../shared/dtos/role.dto';
+import { CreateRoleDto, RolePageDto, UpdateRoleDto } from '../../shared/dtos/role.dto';
 
 
 
@@ -30,5 +30,32 @@ export class RoleController {
   async getPage(@Body() pageDto: RolePageDto) {
     const { pageNum = 1, pageSize = 10, ...query } = pageDto;
     return await this.roleService.getPageByQuery(pageNum, pageSize, query);
+  }
+
+  @Post('create')
+  @ApiOperation({ summary: '新增角色' })
+  @ApiBody({ type: CreateRoleDto })
+  @ApiResponse({ status: 200, description: '成功创建角色', type: Role })
+  async create(@Body() CreateRoleDto: CreateRoleDto) {
+    return this.roleService.create(CreateRoleDto);
+  }
+
+  @Post('update')
+  @ApiOperation({ summary: '编辑角色' })
+  @ApiBody({ type: UpdateRoleDto })
+  @ApiResponse({ status: 200, description: '成功更新角色', type: Role })
+  async update(@Body() UpdateRoleDto: UpdateRoleDto) {
+    const { id, ...rest } = UpdateRoleDto;
+    await this.roleService.update(id, rest);
+    return null;
+  }
+
+  @Delete('delete/:id')
+  @ApiOperation({ summary: '删除角色' })
+  @ApiParam({ name: 'id', description: '角色ID', type: Number })
+  @ApiResponse({ status: 200, description: '成功删除角色', type: Role })
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    await this.roleService.delete(id);
+    return null;
   }
 }

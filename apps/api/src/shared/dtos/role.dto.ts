@@ -18,7 +18,7 @@ export class CreateRoleDto {
   @IsNumber()
   @IsOptional()
   @Type(() => Number)
-  @ApiProperty({ description: '排序号', example: 100 })
+  @ApiProperty({ description: '排序号', example: 100, required: false })
   sort: number;
 }
 
