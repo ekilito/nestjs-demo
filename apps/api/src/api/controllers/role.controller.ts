@@ -4,6 +4,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/s
 import { AdminExceptionFilter } from '../filters/exception.filter';
 import { Role } from '../../shared/entities/role.entity';
 import { CreateRoleDto, RolePageDto, UpdateRoleDto } from '../../shared/dtos/role.dto';
+import { Result } from '../../shared/vo/result';
 
 
 
@@ -35,15 +36,15 @@ export class RoleController {
   @Post('create')
   @ApiOperation({ summary: '新增角色' })
   @ApiBody({ type: CreateRoleDto })
-  @ApiResponse({ status: 200, description: '成功创建角色', type: Role })
+  @ApiResponse({ status: 200, description: '成功创建角色', type: Result })
   async create(@Body() CreateRoleDto: CreateRoleDto) {
-    return this.roleService.create(CreateRoleDto);
+    return Result.ok(this.roleService.create(CreateRoleDto), '创建成功');
   }
 
   @Post('update')
   @ApiOperation({ summary: '编辑角色' })
   @ApiBody({ type: UpdateRoleDto })
-  @ApiResponse({ status: 200, description: '成功更新角色', type: Role })
+  @ApiResponse({ status: 200, description: '成功更新角色', type: Result })
   async update(@Body() UpdateRoleDto: UpdateRoleDto) {
     const { id, ...rest } = UpdateRoleDto;
     await this.roleService.update(id, rest);
@@ -53,9 +54,9 @@ export class RoleController {
   @Delete('delete/:id')
   @ApiOperation({ summary: '删除角色' })
   @ApiParam({ name: 'id', description: '角色ID', type: Number })
-  @ApiResponse({ status: 200, description: '成功删除角色', type: Role })
+  @ApiResponse({ status: 200, description: '成功删除角色', type: Result })
   async delete(@Param('id', ParseIntPipe) id: number) {
     await this.roleService.delete(id);
-    return null;
+    return Result.ok(null, '删除成功');
   }
 }

@@ -1,22 +1,30 @@
-// 统一响应格式 - 所有 API 返回结构一致的数据
 import { ApiProperty } from '@nestjs/swagger';
 
-export class Result {
-  @ApiProperty({ description: '操作是否成功', example: true })
-  public success: boolean;
+export class Result<T = any> {
+  @ApiProperty({ example: 200 })
+  code: number;
 
-  @ApiProperty({ description: '操作的消息或错误信息', example: '操作成功' })
-  public message: string;
+  @ApiProperty({ example: true })
+  success: boolean;
 
-  constructor(success: boolean, message?: string) {
+  @ApiProperty({ example: '操作成功' })
+  message: string;
+
+  @ApiProperty({ description: '返回数据' })
+  data?: T;
+
+  constructor(code: number, success: boolean, message: string, data?: T) {
+    this.code = code;
     this.success = success;
-    this.message = message ?? '';
+    this.message = message;
+    this.data = data;
   }
 
-  static success(message: string) {
-    return new Result(true, message);
+  static ok<T>(data?: T, message = '操作成功') {
+    return new Result(200, true, message, data);
   }
-  static fail(message: string) {
-    return new Result(false, message);
+
+  static fail(message = '操作失败', code = 500) {
+    return new Result(code, false, message);
   }
 }
