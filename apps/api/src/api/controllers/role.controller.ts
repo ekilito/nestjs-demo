@@ -37,18 +37,19 @@ export class RoleController {
   @ApiOperation({ summary: '新增角色' })
   @ApiBody({ type: CreateRoleDto })
   @ApiResponse({ status: 200, description: '成功创建角色', type: Result })
-  async create(@Body() CreateRoleDto: CreateRoleDto) {
-    return Result.ok(this.roleService.create(CreateRoleDto), '创建成功');
+  async create(@Body() createRoleDto: CreateRoleDto) {
+    const data = await this.roleService.create(createRoleDto);
+    return Result.ok(data, '创建成功');
   }
 
   @Post('update')
   @ApiOperation({ summary: '编辑角色' })
   @ApiBody({ type: UpdateRoleDto })
   @ApiResponse({ status: 200, description: '成功更新角色', type: Result })
-  async update(@Body() UpdateRoleDto: UpdateRoleDto) {
-    const { id, ...rest } = UpdateRoleDto;
-    await this.roleService.update(id, rest);
-    return null;
+  async update(@Body() updateRoleDto: UpdateRoleDto) {
+    const { id, ...rest } = updateRoleDto;
+    const data = await this.roleService.update(id, rest);
+    return Result.ok(data, '更新成功');
   }
 
   @Delete('delete/:id')
