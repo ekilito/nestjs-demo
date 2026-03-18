@@ -9,6 +9,7 @@ import {
 import { Request, Response } from 'express';
 import { I18nValidationException, I18nService } from 'nestjs-i18n';
 import { ValidationError } from 'class-validator';
+import { QueryFailedError } from 'typeorm';
 
 // 使用 @Catch 装饰器捕获所有 HttpException 异常
 @Catch()
@@ -87,6 +88,26 @@ export class AdminExceptionFilter implements ExceptionFilter {
         } else if (msg != null) {
           errorMessage = String(msg);
         }
+      }
+    } else if (exception instanceof QueryFailedError) { // 处理数据库查询失败异常
+      const mysqlErr = exception as unknown as {
+        code?: string;
+        errno?: number;
+        message?: string;
+        sqlMessage?: string;
+      };
+      // MySQL 外键约束相关
+      // 1451 ER_ROW_IS_REFERENCED_2: 不能删除/更新父记录（被引用）
+      // 1452 ER_NO_REFERENCED_ROW_2: 外键引用不存在
+      if (mysqlErr.code === 'ER_ROW_IS_REFERENCED_2' || mysqlErr.errno === 1451) {
+        errorMessage = '存在子资源，无法删除或更新父资源，请先处理其子节点';
+      } else if (mysqlErr.code === 'ER_NO_REFERENCED_ROW_2' || mysqlErr.errno === 1452) {
+        errorMessage = '父资源不存在，请检查 parentId';
+      } else if (mysqlErr.code === 'ER_DUP_ENTRY' || mysqlErr.errno === 1062) {
+        errorMessage = '唯一约束冲突，字段值已存在';
+      } else {
+        // 兜底，保留原始数据库错误信息（便于排查）
+        errorMessage = mysqlErr.sqlMessage || mysqlErr.message || errorMessage;
       }
     }
     return response.status(status).json({
