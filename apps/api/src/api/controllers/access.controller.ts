@@ -1,7 +1,28 @@
-import { Controller, UseFilters, UseInterceptors, SerializeOptions, ClassSerializerInterceptor, Logger, Get, Body, Post, Delete, Param, ParseIntPipe } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  UseFilters,
+  UseInterceptors,
+  SerializeOptions,
+  ClassSerializerInterceptor,
+  Get,
+  Body,
+  Post,
+  Delete,
+  Param,
+} from '@nestjs/common';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AdminExceptionFilter } from '../filters/exception.filter';
-import { CreateAccessDto, AccessPageDto, UpdateAccessDto } from '../../shared/dtos/access.dto';
+import {
+  CreateAccessDto,
+  AccessPageDto,
+  UpdateAccessDto,
+} from '../../shared/dtos/access.dto';
 import { Result } from '../../shared/vo/result';
 import { AccessService } from '../../shared/services/access.service';
 import { Access } from '../../shared/entities/access.entity';
@@ -12,20 +33,23 @@ import { Access } from '../../shared/entities/access.entity';
 @UseFilters(AdminExceptionFilter) // 异常过滤器 - 用于处理异常情况
 @Controller('access') // 控制器路由前缀 - /access
 export class AccessController {
-  private readonly logger = new Logger(AccessController.name); // 日志记录器 - 用于记录日志
-  constructor(private readonly accessService: AccessService) { } // 注入访问服务
+  constructor(private readonly accessService: AccessService) {} // 注入访问服务
 
-  @Get('list')
+  @Get('tree')
   @ApiOperation({ summary: '资源列表' })
   @ApiResponse({ status: 200, description: '成功返回资源列表', type: [Access] })
   async getAccessList() {
-    return this.accessService.getList();
+    return this.accessService.getTree();
   }
 
   @Post('page')
   @ApiOperation({ summary: '资源分页' })
   @ApiBody({ type: AccessPageDto })
-  @ApiResponse({ status: 200, description: '成功返回资源分页列表', type: [Access] })
+  @ApiResponse({
+    status: 200,
+    description: '成功返回资源分页列表',
+    type: [Access],
+  })
   async getPage(@Body() pageDto: AccessPageDto) {
     const { pageNum = 1, pageSize = 10, ...query } = pageDto;
     return await this.accessService.getPageByQuery(pageNum, pageSize, query);
@@ -64,6 +88,6 @@ export class AccessController {
   @ApiParam({ name: 'id', description: '资源ID', type: String })
   @ApiResponse({ status: 200, description: '成功返回资源详情', type: Access })
   async getDetail(@Param('id') id: string) {
-    return await this.accessService.getById(id);
+    return await this.accessService.getDetailById(id);
   }
 }
