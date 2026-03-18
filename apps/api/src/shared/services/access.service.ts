@@ -21,7 +21,8 @@ export class AccessService extends MySQLBaseService<Access> {
   }
 
   async getTree(): Promise<any[]> {
-    const trees = await this.dataSource.getTreeRepository(Access).findTrees();
+    const trees = await this.dataSource.getTreeRepository(Access).findTrees(); // 获取树 没有 parentId
+    // 给每个节点加 parentId
     const attachParentId = (
       nodes: Access[],
       parentId: string | null,
@@ -40,6 +41,7 @@ export class AccessService extends MySQLBaseService<Access> {
   async getDetailById(id: string): Promise<Access> {
     const access = await this.repository.findOne({
       where: { id },
+      // 关联查询 父级 子级 
       relations: {
         parent: true,
         children: true,
@@ -54,12 +56,14 @@ export class AccessService extends MySQLBaseService<Access> {
       throw new BadRequestException('payload must be an object');
     }
 
-    const payload = { ...(data ?? {}) } as Record<string, unknown>;
+    const payload = { ...(data ?? {}) } as Record<string, unknown>; // 深拷贝 防止修改原数据
+    // 提取 parentId
     const parentId = payload.parentId;
-    delete payload.parentId;
+    delete payload.parentId; // 删除 parentId 防止关联查询时出错
 
-    const entity = this.repository.create(payload as DeepPartial<Access>);
+    const entity = this.repository.create(payload as DeepPartial<Access>); // 创建实体
     if (typeof parentId === 'string' && parentId) {
+      // 处理 parent（核心）
       const parent = await this.repository.findOne({
         where: { id: parentId },
       });
@@ -76,18 +80,19 @@ export class AccessService extends MySQLBaseService<Access> {
 
   async update(id: number | string, data: any): Promise<Access> {
     const stringId = String(id);
-    const entity = await this.repository.findOne({
+    const entity = await this.repository.findOne({ // 查询实体 查旧数据
       where: { id: stringId },
       relations: { parent: true },
     });
     if (!entity) {
       throw new NotFoundException(`Record with ID ${stringId} not found`);
     }
-
+    // 提取 parentId
     const dto = { ...(data ?? {}) } as Record<string, unknown>;
     const parentId = dto.parentId;
     delete dto.parentId;
 
+    // 处理 parent（核心）
     if (parentId !== undefined) {
       if (parentId === null || parentId === '') {
         entity.parent = null;
