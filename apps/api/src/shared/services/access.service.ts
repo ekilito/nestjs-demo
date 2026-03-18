@@ -20,8 +20,21 @@ export class AccessService extends MySQLBaseService<Access> {
     super(repository);
   }
 
-  async getTree(): Promise<Access[]> {
-    return this.dataSource.getTreeRepository(Access).findTrees();
+  async getTree(): Promise<any[]> {
+    const trees = await this.dataSource.getTreeRepository(Access).findTrees();
+    const attachParentId = (
+      nodes: Access[],
+      parentId: string | null,
+    ): any[] => {
+      return (nodes ?? []).map((node) => {
+        return {
+          ...(node as any),
+          parentId,
+          children: attachParentId(node.children ?? [], node.id),
+        };
+      });
+    };
+    return attachParentId(trees, null);
   }
 
   async getDetailById(id: string): Promise<Access> {
