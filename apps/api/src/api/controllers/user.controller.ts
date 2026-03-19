@@ -12,7 +12,7 @@ import {
   SerializeOptions,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto, UserPageDto } from '../../shared/dtos/user.dto';
+import { CreateUserDto, UpdateUserDto, UpdateUserRolesDto, UserPageDto } from '../../shared/dtos/user.dto';
 import { UserService } from '../../shared/services/user.service';
 import {
   ApiOperation,
@@ -47,7 +47,9 @@ export class UserController {
   @ApiResponse({ status: 200, description: '成功返回用户列表', type: [User] })
   async getList() {
     // this.logger.log('获取所有用户列表');
-    return await this.userService.getList();
+    return await this.userService.getList({
+      relations: ['roles'], // 👈 添加角色关联
+    });
   }
 
   @Post('page')
@@ -104,6 +106,20 @@ export class UserController {
   @ApiParam({ name: 'id', description: '用户ID', type: Number })
   async getById(@Param('id', ParseIntPipe) id: number) {
     return await this.userService.getById(id);
+  }
+
+  // 分配用户角色
+  @Post('/updateRoles')
+  @ApiOperation({ summary: '分配用户角色' })
+  @ApiBody({ type: UpdateUserRolesDto })
+  @ApiResponse({ status: 200, description: '用户角色分配成功', type: Result })
+  @ApiResponse({ status: 400, description: '请求参数错误' })
+  @ApiResponse({ status: 404, description: '用户未找到' })
+  async updateRoles(@Body() updateUserRolesDto: UpdateUserRolesDto) {
+    // this.logger.log(`为用户 ${id} 分配角色，角色 IDs: ${updateUserRolesDto.roleIds}`);
+    const { userId, roleIds } = updateUserRolesDto;
+    await this.userService.updateRoles(userId, roleIds);
+    return Result.ok(null, '角色分配成功');
   }
 }
 

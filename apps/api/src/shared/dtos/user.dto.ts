@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { ArrayMinSize, IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import {
   PasswordValidators,
   IsOptionalString,
@@ -76,4 +76,17 @@ export class UserPageDto extends PageDto {
   @IsOptionalNumber()
   status?: number;
 
+}
+
+export class UpdateUserRolesDto {
+  @ApiProperty({ description: '用户 ID', example: 1 })
+  @IsNumber()
+  readonly userId: number; // 作用是接收前端参数 - 与数据库字段无关
+
+  @ApiProperty({ description: '角色 ID 数组', example: [1, 2, 3] })
+  @IsArray()
+  @IsNumber({}, { each: true }) // 每个元素必须是数字
+  @IsNotEmpty({ message: '角色 ID 数组不能为空' }) // ✅ 非空验证
+  @ArrayMinSize(1, { message: '至少需要一个角色' }) // ✅ 最小长度验证
+  readonly roleIds: number[];
 }

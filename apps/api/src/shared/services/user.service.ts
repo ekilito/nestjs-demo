@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { User } from '../entities/user.entity';
 import { MySQLBaseService } from './mysql-base.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { FindManyOptions, FindOptionsWhere, Like, Repository } from 'typeorm';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { UtilityService } from './utility.service';
+import { Role } from '../entities/role.entity';
 
 // 用户服务类
 // 继承 MySQLBaseService 提供基础的 CRUD 操作
@@ -15,6 +16,7 @@ export class UserService extends MySQLBaseService<User> {
     @InjectRepository(User) // 注入 User 实体的仓库
     protected repository: Repository<User>, // 用户实体的仓库实例，可在子类访问
     private readonly utilityService: UtilityService, // 密码加密服务，用于对密码进行哈希处理
+    @InjectRepository(Role) private readonly roleRepository: Repository<Role> // 角色实体的仓库实例，可在子类访问
   ) {
     super(repository); // 调用父类构造函数，初始化仓库实例
   }
@@ -72,9 +74,52 @@ export class UserService extends MySQLBaseService<User> {
     if (typeof q.status === 'number' && !Number.isNaN(q.status)) {
       where.status = q.status;
     }
-  
+
     return super.getPage(pageNum, pageSize, {
       where: Object.keys(where).length > 0 ? where : undefined,
+      relations: ['roles'], // 👈 添加角色关联，这样返回的用户列表会包含 roles 字段
     });
+  }
+
+  // 为用户分配角色
+  async updateRoles(id: number, roleIds: number[]) {
+    // 开始数据库事务，确保数据一致性
+    const queryRunner = this.repository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 查找用户
+      const user = await queryRunner.manager.findOne(User, {
+        where: { id },
+        relations: ['roles'],
+      });
+
+      if (!user) {
+        throw new NotFoundException(`用户 ${id} 未找到`);
+      }
+
+      // 查询所有角色
+      const roles = await queryRunner.manager.findByIds(Role, roleIds);
+
+      // 验证角色是否都找到了
+      if (roles.length !== roleIds.length) {
+        const foundIds = roles.map((r) => String(r.id));
+        const invalidIds = roleIds.filter((rid) => !foundIds.includes(String(rid)));
+        throw new BadRequestException(`无效的角色 ID: ${invalidIds.join(', ')}`);
+      }
+
+      // 为用户设置角色并保存
+      user.roles = roles;
+      await queryRunner.manager.save(user);
+
+      await queryRunner.commitTransaction();
+      return { success: true, message: '角色分配成功' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

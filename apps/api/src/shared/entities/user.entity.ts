@@ -4,6 +4,8 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import {
   ApiHideProperty,
@@ -11,6 +13,7 @@ import {
   ApiPropertyOptional,
 } from '@nestjs/swagger';
 import { Exclude, Expose, Transform } from 'class-transformer';
+import { Role } from './role.entity';
 
 @Entity()
 export class User {
@@ -52,6 +55,32 @@ export class User {
   })
   get contact(): string {
     return `mobile:${this.mobile}, email:${this.email}`;
+  }
+
+  // ManyToMany:   , JoinTable: 
+  @ManyToMany(() => Role) // 👈 当前实体与 Role 实体是多对多关系
+  // 👈 指定当前实体为关系拥有方，会自动创建中间表！！！！！！
+  @JoinTable({
+    name: 'sys_user_role',  // 👈 自定义表名
+
+    // 自定义当前实体的外键列名
+    joinColumn: {
+      name: 'user_id',      // 👈 自定义 userId 字段名
+      referencedColumnName: 'id', // 👈 引用 User 实体的 id 字段
+    },
+
+    // 自定义关联实体的外键列名
+    inverseJoinColumn: {
+      name: 'role_id',      // 👈 自定义 roleId 字段名
+      referencedColumnName: 'id', // 👈 引用 Role 实体的 id 字段
+    },
+  })
+  roles: Role[]; // 👈 当前实体关联的角色数组
+
+  @Expose() // 👈 在序列化时暴露角色 ID 数组
+  @ApiProperty({ description: '角色 ID 数组', example: ['1', '2', '3'] })
+  get roleIds(): number[] {
+    return this.roles ? this.roles.map(role => Number(role.id)) : [];
   }
 
   @Column({ default: 1 })
