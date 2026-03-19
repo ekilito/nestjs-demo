@@ -67,9 +67,6 @@ export class RoleService extends MySQLBaseService<Role> {
     pageSize: number = 10,
     query?: Record<string, any>,
   ) {
-    return super.getPageByQuery(pageNum, pageSize, {
-      ...query,
-      relations: ['accesses'], // 👈 添加资源关联
-    });
+    return super.getPageByQuery(pageNum, pageSize, query, ['accesses']);
   }
 }

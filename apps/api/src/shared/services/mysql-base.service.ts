@@ -63,6 +63,7 @@ export abstract class MySQLBaseService<T> {
     pageNum: number = 1,
     pageSize: number = 10,
     query?: Record<string, any>, // 关键：通用查询对象
+    relations?: string[], // 👈 新增：可选的关联关系数组
   ): Promise<{
     records: T[];
     total: number;
@@ -94,6 +95,7 @@ export abstract class MySQLBaseService<T> {
 
       const [records, total] = await this.repository.findAndCount({
         where,
+        relations, // 👈 添加关联关系（可选）
         skip,
         take: pageSize,
       });
