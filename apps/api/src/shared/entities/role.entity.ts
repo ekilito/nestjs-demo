@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Access } from './access.entity';
 
 @Entity()
 export class Role {
@@ -18,6 +19,14 @@ export class Role {
   @Column({ default: 100 })
   @ApiProperty({ description: '排序号', example: 100 })
   sort: number;
+
+  @ManyToMany(() => Access) // 多对多关联
+  @JoinTable({ // 关联表配置
+    name: 'sys_role_access', // 自定义关联表名
+    joinColumns: [{ name: 'role_Id' }],
+    inverseJoinColumns: [{ name: 'access_Id' }],
+  })
+  accesses: Access[];
 
   @CreateDateColumn()
   @ApiProperty({ description: '创建时间', example: '2024年8月11日16:49:22' })
