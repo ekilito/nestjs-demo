@@ -4,8 +4,10 @@ import { RoleController } from './controllers/role.controller';
 import { AccessController } from './controllers/access.controller';
 import { TagController } from './controllers/tag.controller';
 import { CategoryController } from './controllers/category.controller';
+import { ArticleController } from './controllers/article.controller';
+
 
 @Module({
-  controllers: [UserController, RoleController, AccessController, TagController, CategoryController],
+  controllers: [UserController, RoleController, AccessController, TagController, CategoryController, ArticleController],
 })
 export class ApiModule { }
