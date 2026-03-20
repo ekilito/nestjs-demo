@@ -1,6 +1,11 @@
 import { In, Repository } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
+// 绑定多对多关系
+// repo: 实体仓库
+// ids: 关系 ID 列表
+// relationName: 关系字段名
+// entity: 实体对象
 export async function bindManyToManyRelation<T extends object>(
   repo: Repository<T>,
   ids: any[] | undefined,
@@ -31,6 +36,10 @@ export async function bindManyToManyRelation<T extends object>(
   entity[relationName] = list;
 }
 
+// 解析父级记录
+// repo: 实体仓库
+// parentId: 父级记录 ID
+// selfId: 自身记录 ID（防止选择自身）
 export async function resolveParent<T extends object>(
   repo: Repository<T>,
   parentId?: string,
@@ -61,6 +70,16 @@ export async function resolveParent<T extends object>(
   return parent;
 }
 
+
+// 更新实体关系
+// manager: TypeORM 的 EntityManager
+// entityClass: 实体类，比如 User 或 Role
+// entityId: 实体 ID
+// relationKey: 关系字段名，比如 'roles' 或 'accesses'
+// relationClass: 关系实体类，比如 Role 或 Access
+// relationIds: 要关联的 ID 列表
+// entityNotFoundMsg: 实体未找到的错误信息
+// relationNotFoundMsg: 关联实体未找到的错误信息
 export async function updateEntityRelations<
   T extends { id: any;[key: string]: any },
   R extends { id: any }
