@@ -27,19 +27,29 @@ export class Article {
   content: string;
 
   @ManyToMany(() => Category)
-  @JoinTable()
-  categories: Category[]
+  @JoinTable({
+    name: 'article_category',
+    joinColumns: [{ name: 'article_id' }],
+    inverseJoinColumns: [{ name: 'category_id' }],
+  })
+  @ApiProperty({ description: '分类列表', type: () => [Category] })
+  categories: Category[];
 
   @ManyToMany(() => Tag)
-  @JoinTable()
-  tags: Tag[]
+  @JoinTable({
+    name: 'article_tag',
+    joinColumns: [{ name: 'article_id' }],
+    inverseJoinColumns: [{ name: 'tag_id' }],
+  })
+  @ApiProperty({ description: '标签列表', type: () => [Tag] })
+  tags: Tag[];
 
   @Column({ type: 'enum', enum: ArticleStateEnum, default: 'draft' })
-  @ApiProperty({ description: '审核状态', example: '草稿' })
+  @ApiProperty({ description: '审核状态', example: 'draft', enum: ArticleStateEnum })
   state: ArticleStateEnum;
 
   @Column({ type: 'text', nullable: true })
-  @ApiProperty({ description: '审核不通过原因', example: '内容不合要求' })
+  @ApiProperty({ description: '审核不通过原因', example: '内容不合要求', required: false })
   rejectionReason: string;
 
   @Column({ default: 1 })
@@ -51,10 +61,10 @@ export class Article {
   sort: number;
 
   @CreateDateColumn()
-  @ApiProperty({ description: '创建时间', example: '2024年8月11日16:49:22' })
+  @ApiProperty({ description: '创建时间', example: '2024-08-11T16:49:22.000Z' })
   createdAt: Date;
 
   @UpdateDateColumn()
-  @ApiProperty({ description: '更新时间', example: '2024年8月11日16:49:22' })
+  @ApiProperty({ description: '更新时间', example: '2024-08-11T16:49:22.000Z' })
   updatedAt: Date;
 }

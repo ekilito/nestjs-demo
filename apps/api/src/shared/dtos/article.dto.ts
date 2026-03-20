@@ -1,53 +1,53 @@
-import { ApiProperty, PartialType as PartialTypeFromSwagger } from '@nestjs/swagger';
-import { IsString, IsOptional, MaxLength, IsInt, IsNumber } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional, PartialType as PartialTypeFromSwagger } from '@nestjs/swagger';
+import { IsString, IsOptional, MaxLength, IsArray, IsEnum, IsNumber } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ArticleStateEnum } from '../enums/article.enum';
 
 export class CreateArticleDto {
   @IsString()
+  @MaxLength(50, { message: '标题最多不能超过 50 个字' })
   @ApiProperty({ description: '标题', example: '文章标题' })
-  @MaxLength(50, { message: '标题最多不能超过50个字' })
   title: string;
 
   @IsString()
   @ApiProperty({ description: '内容', example: '文章内容' })
   content: string;
 
-  @Transform(({ value }) => Array.isArray(value) ? value.map(Number) : value ? [Number(value)] : [])
-  @IsInt({ each: true })
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  @ApiProperty({ description: '分类ID数组', example: '[1,2]' })
-  categoryIds: number[];
+  @Transform(({ value }) => Array.isArray(value) ? value : value ? [String(value)] : [])
+  @ApiPropertyOptional({ description: '分类 ID 数组', example: ['12345678901234567890', '12345678901234567891'] })
+  categoryIds?: string[];
 
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  @Transform(({ value }) => Array.isArray(value) ? value.map(Number) : value ? [Number(value)] : [])
-  @IsInt({ each: true })
-  @ApiProperty({ description: '标签ID数组', example: '[3,4]' })
-  tagIds: number[];
-
+  @Transform(({ value }) => Array.isArray(value) ? value : value ? [String(value)] : [])
+  @ApiPropertyOptional({ description: '标签 ID 数组', example: ['12345678901234567890', '12345678901234567891'] })
+  tagIds?: string[];
 
   @IsNumber()
   @IsOptional()
   @Type(() => Number)
-  @ApiProperty({ description: '状态', example: 1 })
-  status: number;
+  @ApiPropertyOptional({ description: '状态', example: 1 })
+  status?: number;
 
-  @ApiProperty({ description: '审核状态', example: 'draft' })
-  @Transform(({ value }) => ArticleStateEnum[value])
+  @IsEnum(ArticleStateEnum)
   @IsOptional()
+  @ApiPropertyOptional({ description: '审核状态', example: 'draft', enum: ArticleStateEnum })
   state?: ArticleStateEnum;
 
-
-  @ApiProperty({ description: '审核不通过原因', example: '内容不合要求' })
-  @IsOptional()
   @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({ description: '审核不通过原因', example: '内容不合要求' })
   rejectionReason?: string;
 
   @IsNumber()
   @IsOptional()
   @Type(() => Number)
-  @ApiProperty({ description: '排序号', example: 100 })
-  sort: number;
+  @ApiPropertyOptional({ description: '排序号', example: 100 })
+  sort?: number;
 }
 
 export class UpdateArticleDto extends PartialTypeFromSwagger(CreateArticleDto) {
