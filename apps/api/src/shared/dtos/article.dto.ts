@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType as PartialTypeFromSwagger
 import { IsString, IsOptional, MaxLength, IsArray, IsEnum, IsNumber } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ArticleStateEnum } from '../enums/article.enum';
+import { PageDto } from './page.dto';
 
 export class CreateArticleDto {
   @IsString()
@@ -54,4 +55,16 @@ export class UpdateArticleDto extends PartialTypeFromSwagger(CreateArticleDto) {
   @IsString()
   @ApiProperty({ description: 'ID', example: '12345678901234567890' })
   id: string;
+}
+
+export class ArticlePageDto extends PageDto {
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({ description: '标题', example: '文章标题' })
+  title?: string;
+
+  @IsEnum(ArticleStateEnum)
+  @IsOptional()
+  @ApiPropertyOptional({ description: '审核状态', example: 'draft', enum: ArticleStateEnum })
+  state?: ArticleStateEnum;
 }

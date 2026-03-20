@@ -14,6 +14,8 @@ import { Tag } from './entities/tag.entity';
 import { TagService } from './services/tag.service';
 import { Category } from './entities/category.entity';
 import { CategoryService } from './services/category.service';
+import { Article } from './entities/article.entity';
+import { ArticleService } from './services/article.service';
 @Global()
 @Module({
   imports: [
@@ -33,7 +35,7 @@ import { CategoryService } from './services/category.service';
         logging: false, // 关闭SQL日志输出（生产环境建议开启）
       }),
     }),
-    TypeOrmModule.forFeature([User, Role, Access, Tag, Category]), // 注册 User、Role、Access、Tag、Category 实体类，使其在当前模块可用
+    TypeOrmModule.forFeature([User, Role, Access, Tag, Category, Article]), // 注册 User、Role、Access、Tag、Category 实体类，使其在当前模块可用
   ],
   providers: [
     ConfigurationService,
@@ -44,6 +46,7 @@ import { CategoryService } from './services/category.service';
     AccessService,
     TagService,
     CategoryService,
+    ArticleService,
   ], // 注册服务类，使其可以被注入使用
   exports: [
     ConfigurationService,
@@ -54,6 +57,7 @@ import { CategoryService } from './services/category.service';
     AccessService,
     TagService,
     CategoryService,
+    ArticleService,
   ], // 导出服务类，使其在其他模块可用
 })
 export class SharedModule { }
