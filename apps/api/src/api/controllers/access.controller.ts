@@ -33,7 +33,7 @@ import { Access } from '../../shared/entities/access.entity';
 @UseFilters(AdminExceptionFilter) // 异常过滤器 - 用于处理异常情况
 @Controller('access') // 控制器路由前缀 - /access
 export class AccessController {
-  constructor(private readonly accessService: AccessService) {} // 注入访问服务
+  constructor(private readonly accessService: AccessService) { } // 注入访问服务
 
   @Get('tree')
   @ApiOperation({ summary: '资源列表' })
@@ -70,7 +70,7 @@ export class AccessController {
   @ApiResponse({ status: 200, description: '成功更新资源', type: Result })
   async update(@Body() updateAccessDto: UpdateAccessDto) {
     const { id, ...rest } = updateAccessDto;
-    await this.accessService.update(id, rest);
+    await this.accessService.update(id, updateAccessDto);
     return null;
   }
 
