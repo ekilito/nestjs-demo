@@ -11,19 +11,27 @@ import {
   HeaderResolver,
 } from 'nestjs-i18n';
 import * as path from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: path.join(__dirname, '..', 'uploads'),
+      // rootPath: join(process.cwd(), 'uploads'), // 使用项目根目录
+      serveRoot: '/uploads',
+    }),
     I18nModule.forRoot({
-      fallbackLanguage: 'zh', // 默认语言
+      fallbackLanguage: 'en', // 默认语言
       loaderOptions: {
         path: path.join(__dirname, '/i18n/'), // 语言文件路径
         watch: true, // 监听语言文件变化
       },
       resolvers: [
-        { use: QueryResolver, options: ['lang'] }, // lang=zh-CN
-        AcceptLanguageResolver, // Accept-Language=zh-CN
-        new HeaderResolver(['x-lang']), // x-lang=zh-CN
+        // { use: QueryResolver, options: ['lang'] }, // lang=zh-CN
+        // AcceptLanguageResolver, // Accept-Language=zh-CN
+        // new HeaderResolver(['x-lang']), // x-lang=zh-CN
+        new QueryResolver(["lang", "l"]),
+        AcceptLanguageResolver,
       ],
     }),
     ApiModule,
@@ -33,4 +41,4 @@ import * as path from 'path';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
