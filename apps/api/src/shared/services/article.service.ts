@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { MySQLBaseService } from './mysql-base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, FindManyOptions } from 'typeorm';
 import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { Article } from '../entities/article.entity';
 import { Category } from '../entities/category.entity';
@@ -20,6 +20,22 @@ export class ArticleService extends MySQLBaseService<Article> {
     private readonly dataSource: DataSource,
   ) {
     super(repository);
+  }
+
+  /**
+   * 重写分页查询，默认关联分类和标签
+   */
+  async getPageByQuery(
+    pageNum: number = 1,
+    pageSize: number = 10,
+    query?: Record<string, any>,
+  ): Promise<{
+    records: Article[];
+    total: number;
+    size: number;
+    pages: number;
+  }> {
+    return await super.getPageByQuery(pageNum, pageSize, query, ['categories', 'tags']);
   }
 
   async getDetailById(id: string): Promise<Article> {
