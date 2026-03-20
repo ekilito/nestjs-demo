@@ -67,6 +67,7 @@ export class ArticleService extends MySQLBaseService<Article> {
     const categoryRepo = this.dataSource.getRepository(Category); // 拿到 Category 实体对应的 Repository
     const tagRepo = this.dataSource.getRepository(Tag);
 
+    // 绑定多对多关系
     await bindManyToManyRelation(categoryRepo, categoryIds, 'categories', entity);
     await bindManyToManyRelation(tagRepo, tagIds, 'tags', entity);
 
