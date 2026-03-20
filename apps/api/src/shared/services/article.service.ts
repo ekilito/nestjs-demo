@@ -6,10 +6,11 @@ import {
 import { MySQLBaseService } from './mysql-base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository, FindManyOptions } from 'typeorm';
-import { DeepPartial } from 'typeorm/common/DeepPartial';
+import { CreateArticleDto, UpdateArticleDto } from '../dtos/article.dto';
 import { Article } from '../entities/article.entity';
 import { Category } from '../entities/category.entity';
 import { Tag } from '../entities/tag.entity';
+import { bindManyToManyRelation } from '../utils/comm';
 
 @Injectable()
 export class ArticleService extends MySQLBaseService<Article> {
@@ -51,109 +52,69 @@ export class ArticleService extends MySQLBaseService<Article> {
     return article;
   }
 
-  async create(data: any): Promise<Article> {
+  async create(data: CreateArticleDto): Promise<Article> {
+    // 验证数据
     if (Array.isArray(data)) {
       throw new BadRequestException('payload must be an object');
     }
 
-    const payload = { ...(data ?? {}) } as Record<string, unknown>;
-    // 提取 categoryIds 和 tagIds
-    const categoryIds = payload.categoryIds;
-    const tagIds = payload.tagIds;
-    delete payload.categoryIds;
-    delete payload.tagIds;
+    const payload = { ...(data ?? {}) };
+    const { categoryIds, tagIds, ...rest } = payload;
 
-    const entity = this.repository.create(payload as DeepPartial<Article>);
+    const entity = this.repository.create(rest);
 
-    // 处理分类关联
-    if (Array.isArray(categoryIds) && categoryIds.length > 0) {
-      const categories = await this.dataSource.getRepository(Category).findByIds(categoryIds);
-      if (categories.length !== categoryIds.length) {
-        throw new NotFoundException('Some categories not found');
-      }
-      entity.categories = categories;
-    } else {
-      entity.categories = [];
-    }
+    // 处理分类关联 
+    const categoryRepo = this.dataSource.getRepository(Category); // 拿到 Category 实体对应的 Repository
+    const tagRepo = this.dataSource.getRepository(Tag);
 
-    // 处理标签关联
-    if (Array.isArray(tagIds) && tagIds.length > 0) {
-      const tags = await this.dataSource.getRepository(Tag).findByIds(tagIds);
-      if (tags.length !== tagIds.length) {
-        throw new NotFoundException('Some tags not found');
-      }
-      entity.tags = tags;
-    } else {
-      entity.tags = [];
-    }
+    await bindManyToManyRelation(categoryRepo, categoryIds, 'categories', entity);
+    await bindManyToManyRelation(tagRepo, tagIds, 'tags', entity);
 
     return await this.repository.save(entity);
   }
 
-  async update(id: number | string, data: any): Promise<Article> {
-    const stringId = String(id);
+  async update(id: string, data: UpdateArticleDto): Promise<Article> {
+    // 验证数据
     const entity = await this.repository.findOne({
-      where: { id: stringId },
-      relations: {
-        categories: true,
-        tags: true,
-      },
-    });
-    if (!entity) {
-      throw new NotFoundException(`Record with ID ${stringId} not found`);
-    }
-
-    const dto = { ...(data ?? {}) } as Record<string, unknown>;
-    const categoryIds = dto.categoryIds;
-    const tagIds = dto.tagIds;
-    delete dto.categoryIds;
-    delete dto.tagIds;
-
-    // 处理分类关联
-    if (categoryIds !== undefined) {
-      if (Array.isArray(categoryIds) && categoryIds.length > 0) {
-        const categories = await this.dataSource.getRepository(Category).findByIds(categoryIds);
-        if (categories.length !== categoryIds.length) {
-          throw new NotFoundException('Some categories not found');
-        }
-        entity.categories = categories;
-      } else {
-        entity.categories = [];
-      }
-    }
-
-    // 处理标签关联
-    if (tagIds !== undefined) {
-      if (Array.isArray(tagIds) && tagIds.length > 0) {
-        const tags = await this.dataSource.getRepository(Tag).findByIds(tagIds);
-        if (tags.length !== tagIds.length) {
-          throw new NotFoundException('Some tags not found');
-        }
-        entity.tags = tags;
-      } else {
-        entity.tags = [];
-      }
-    }
-
-    Object.assign(entity, dto);
-    return await this.repository.save(entity);
-  }
-
-  async deleteWithRelations(id: string): Promise<void> {
-    const article = await this.repository.findOne({
       where: { id },
       relations: {
         categories: true,
         tags: true,
       },
     });
+
+    if (!entity) {
+      throw new NotFoundException(`Record with ID ${id} not found`);
+    }
+
+    const { categoryIds, tagIds, ...rest } = data ?? {};
+
+    const categoryRepo = this.dataSource.getRepository(Category);
+    const tagRepo = this.dataSource.getRepository(Tag);
+
+    await bindManyToManyRelation(categoryRepo, categoryIds, 'categories', entity);
+    await bindManyToManyRelation(tagRepo, tagIds, 'tags', entity);
+
+    Object.assign(entity, rest);
+
+    return await this.repository.save(entity);
+  }
+
+  /**
+   * 删除文章及关联关系
+   * @param id
+   * 🙅
+   * 中间表（categories / tags）会自动删除
+   * 不用 ManyToMany，而是中间表是“独立实体” 是需要的
+   */
+  async deleteWithRelations(id: string): Promise<void> {
+    const article = await this.repository.findOne({
+      where: { id },
+    });
     if (!article) {
       throw new NotFoundException(`Record with ID ${id} not found`);
     }
-    // 清空关联关系后删除
-    article.categories = [];
-    article.tags = [];
-    await this.repository.save(article);
+    // TypeORM 会自动删除中间表记录，直接删除即可
     await this.repository.delete(id);
   }
 }

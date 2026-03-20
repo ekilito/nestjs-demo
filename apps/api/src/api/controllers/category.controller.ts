@@ -56,7 +56,7 @@ export class CategoryController {
   @ApiResponse({ status: 200, description: '成功更新分类', type: Result })
   async update(@Body() updateCategoryDto: UpdateCategoryDto) {
     const { id, ...rest } = updateCategoryDto;
-    await this.categoryService.update(id, rest);
+    await this.categoryService.update(id, updateCategoryDto);
     return null;
   }
 

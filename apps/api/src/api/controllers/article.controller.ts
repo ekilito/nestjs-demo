@@ -63,7 +63,7 @@ export class ArticleController {
   @ApiResponse({ status: 200, description: '成功更新文章', type: Result })
   async update(@Body() updateArticleDto: UpdateArticleDto) {
     const { id, ...rest } = updateArticleDto;
-    await this.articleService.update(id, rest);
+    await this.articleService.update(id, updateArticleDto);
     return null;
   }
 

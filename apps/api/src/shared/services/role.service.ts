@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Role } from '../entities/role.entity';
 import { UpdateRoleAccessesDto } from '../dtos/role.dto';
 import { Access } from '../entities/access.entity';
+import { updateEntityRelations } from '../utils/comm';
 
 // 角色服务类
 // 继承 MySQLBaseService 提供基础的操作
@@ -19,46 +20,17 @@ export class RoleService extends MySQLBaseService<Role> {
   }
 
   // 为角色分配资源
-  async updateAccesses(id: number, updateRoleAccessesDto: UpdateRoleAccessesDto) {
-    const queryRunner = this.repository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 查找角色
-      const role = await queryRunner.manager.findOne(Role, {
-        where: { id: String(id) },
-        relations: ['accesses'],
-      });
-
-      if (!role) {
-        throw new NotFoundException(`角色 ${id} 未找到`);
-      }
-
-      const { accessIds } = updateRoleAccessesDto;
-
-      // 查询所有资源
-      const accesses = await queryRunner.manager.findByIds(Access, accessIds);
-
-      // 验证资源是否都找到了
-      if (accesses.length !== accessIds.length) {
-        const foundIds = accesses.map((a) => a.id);
-        const invalidIds = accessIds.filter((aid) => !foundIds.includes(String(aid)));
-        throw new BadRequestException(`无效的资源 ID: ${invalidIds.join(', ')}`);
-      }
-
-      // 为角色设置资源并保存
-      role.accesses = accesses;
-      await queryRunner.manager.save(role);
-
-      await queryRunner.commitTransaction();
-      return { success: true, message: '资源分配成功' };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+  async updateAccesses(id: number, dto: UpdateRoleAccessesDto) {
+    return updateEntityRelations(
+      this.repository.manager,        // EntityManager
+      Role,                           // 实体类
+      id,                             // 实体 ID
+      'accesses',                     // 关系字段
+      Access,                         // 关联实体类
+      dto.accessIds,                  // 关联 ID 列表
+      `角色 ${id} 未找到`,            // 自定义错误消息
+      '无效的资源 ID'                 // 自定义错误消息
+    );
   }
 
   // 重写 getPageByQuery 方法，添加 accesses 关联加载

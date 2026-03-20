@@ -7,6 +7,7 @@ import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { UtilityService } from './utility.service';
 import { Role } from '../entities/role.entity';
+import { updateEntityRelations } from '../utils/comm';
 
 // 用户服务类
 // 继承 MySQLBaseService 提供基础的 CRUD 操作
@@ -83,43 +84,36 @@ export class UserService extends MySQLBaseService<User> {
 
   // 为用户分配角色
   async updateRoles(id: number, roleIds: number[]) {
-    // 开始数据库事务，确保数据一致性
-    const queryRunner = this.repository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 查找用户
-      const user = await queryRunner.manager.findOne(User, {
-        where: { id },
-        relations: ['roles'],
-      });
-
-      if (!user) {
-        throw new NotFoundException(`用户 ${id} 未找到`);
-      }
-
-      // 查询所有角色
-      const roles = await queryRunner.manager.findByIds(Role, roleIds);
-
-      // 验证角色是否都找到了
-      if (roles.length !== roleIds.length) {
-        const foundIds = roles.map((r) => String(r.id));
-        const invalidIds = roleIds.filter((rid) => !foundIds.includes(String(rid)));
-        throw new BadRequestException(`无效的角色 ID: ${invalidIds.join(', ')}`);
-      }
-
-      // 为用户设置角色并保存
-      user.roles = roles;
-      await queryRunner.manager.save(user);
-
-      await queryRunner.commitTransaction();
-      return { success: true, message: '角色分配成功' };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    return updateEntityRelations(
+      this.repository.manager,    // EntityManager
+      User,                       // 实体类
+      id,                         // 实体 ID
+      'roles',                    // 关系字段
+      Role,                       // 关联实体类
+      roleIds,                    // 关联 ID 列表
+      `用户 ${id} 未找到`,          // 自定义错误消息
+      '无效的角色 ID'               // 自定义错误消息
+    );
   }
+
+  /**
+   * 重写 delete 方法，处理角色关联！ （可以🙅重新）
+   * TypeORM 会自动删除中间表记录，但为了代码清晰和事务安全，显式处理
+   * ManyToMany + @JoinTable：删除主表时，中间表自动清理！！！！！！！！
+   */
+  // async delete(id: number | string): Promise<void> {
+  //   const numberId = typeof id === 'string' ? Number(id) : id;
+  //   const user = await this.repository.findOne({
+  //     where: { id: numberId },
+  //     relations: ['roles'],
+  //   });
+
+  //   if (!user) {
+  //     throw new NotFoundException(`Record with ID ${numberId} not found`);
+  //   }
+
+  //   // TypeORM ManyToMany 关系会在删除主实体时自动清理中间表
+  //   // 直接删除即可，不需要手动清空 roles
+  //   await this.repository.delete(numberId);
+  // }
 }
