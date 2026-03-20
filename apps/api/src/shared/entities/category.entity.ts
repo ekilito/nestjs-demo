@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { generateSnowflakeId } from '../utils/snowflake';
 
 @Entity()
-@Tree("materialized-path")
+@Tree("materialized-path") // 使用树形结构，采用materialized-path策略
 export class Category {
   @PrimaryColumn({ type: 'bigint' })
   @ApiProperty({ description: 'ID', example: '12345678901234567890' })
@@ -35,10 +35,10 @@ export class Category {
   sort: number;
 
   @CreateDateColumn()
-  @ApiProperty({ description: '创建时间', example: '2024年8月11日16:49:22' })
+  @ApiProperty({ description: '创建时间', example: '2024-08-11T16:49:22.000Z' })
   createdAt: Date;
 
   @UpdateDateColumn()
-  @ApiProperty({ description: '更新时间', example: '2024年8月11日16:49:22' })
+  @ApiProperty({ description: '更新时间', example: '2024-08-11T16:49:22.000Z' })
   updatedAt: Date;
 }

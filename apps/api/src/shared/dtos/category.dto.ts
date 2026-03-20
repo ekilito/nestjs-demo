@@ -16,7 +16,7 @@ export class CreateCategoryDto {
   @IsNumber()
   @IsOptional()
   @Type(() => Number)
-  @ApiProperty({ description: '状态', example: 1 })
+  @ApiProperty({ description: '生效状态', example: 1 })
   status: number;
 
 
