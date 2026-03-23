@@ -56,6 +56,9 @@ export class CosService implements OnModuleInit {
         Expires: expirationTime, // 签名有效期
         Bucket: bucket, // 存储桶名称
         Region: region, // 存储桶所在区域
+        Headers: {
+          'Content-Disposition': 'inline'
+        }
       });
 
       return {
@@ -68,6 +71,27 @@ export class CosService implements OnModuleInit {
     } catch (error) {
       this.logger.error(`Failed to generate COS auth: ${error.message}`);
       throw new InternalServerErrorException('Failed to generate COS authentication');
+    }
+  }
+
+  async uploadFile(key: string, body: Buffer, contentType = 'image/jpeg') {
+    const bucket = this.configService.get('COS_BUCKET');
+    const region = this.configService.get('COS_REGION');
+
+    try {
+      const result = await this.cos.putObject({
+        Bucket: bucket,
+        Region: region,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+        ContentDisposition: 'inline',
+      });
+
+      return result;
+    } catch (error) {
+      this.logger.error(`COS upload failed: ${error.message}`);
+      throw new InternalServerErrorException('文件上传到 COS 失败');
     }
   }
 }

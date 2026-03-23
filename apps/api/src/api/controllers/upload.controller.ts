@@ -64,7 +64,7 @@ export class UploadController {
     },
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '文件类型不支持或文件过大' })
-  @UseInterceptors(FileInterceptor('upload', FILE_UPLOAD_CONFIG)) // 文件上传拦截器
+  @UseInterceptors(FileInterceptor('file', FILE_UPLOAD_CONFIG)) // 文件上传拦截器
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     try {
       // 验证文件是否存在
@@ -72,22 +72,39 @@ export class UploadController {
         throw new BadRequestException('未选择要上传的文件');
       }
 
-      // 处理压缩和格式转换！
-      // 生成压缩后的文件名,扩展名改为.min.jpeg / 设置压缩后的文件路径
+      // 1️⃣ 生成压缩文件名
       const compressedFilename = `${path.basename(file.filename, path.extname(file.filename))}.min.jpeg`;
       const compressedFilePath = `./uploads/${compressedFilename}`;
 
-      // 图片压缩和格式转换
+      // 2️⃣ 压缩 + 转 jpeg
       await this.compressAndConvertImage(file.path, compressedFilePath);
 
-      // 删除原始文件
-      await fs.unlink(file.path);
+      // 3️⃣ 删除原始文件（节省空间）
+      await fs.unlink(file.path).catch(() => { });
 
-      // 读取压缩文件信息
+      // 4️⃣ 读取压缩后的文件
+      const fileBuffer = await fs.readFile(compressedFilePath);
+
+      // 5️⃣ 生成 COS key（推荐按日期分目录）
+      const date = new Date().toISOString().slice(0, 10); // 2026-03-23
+      const cosKey = `uploads/${date}/${compressedFilename}`;
+
+      // 6️⃣ 上传到 COS
+      await this.cosService.uploadFile(cosKey, fileBuffer, 'image/jpeg');
+
+      // 7️⃣ 获取 COS 访问地址
+      const cosUrl = `https://${process.env.COS_BUCKET}.cos.${process.env.COS_REGION}.myqcloud.com/${cosKey}`;
+
+      // 8️⃣ 获取文件信息
       const stats = await fs.stat(compressedFilePath);
 
+      // ✅ 是否保留本地文件（你可以选）
+      // 如果你不想占本地空间，可以删除：
+      // await fs.unlink(compressedFilePath).catch(() => {});
+
       return {
-        url: `/uploads/${compressedFilename}`,
+        url: cosUrl, // ✅ 返回 COS 地址
+        localUrl: `/uploads/${compressedFilename}`, // 本地地址
         originalName: file.originalname,
         size: stats.size,
         mimetype: 'image/jpeg',
