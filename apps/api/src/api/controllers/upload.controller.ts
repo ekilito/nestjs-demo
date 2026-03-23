@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes } from '@nestjs/swagger';
+import sharp from 'sharp';
 import { CosService } from '../../shared/services/cos.service';
 
 // 文件上传配置
@@ -30,7 +31,7 @@ const FILE_UPLOAD_CONFIG: Options = {
   // 文件过滤器
   fileFilter: (_req, file, callback) => {
     // 验证文件类型
-    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedMimeTypes.includes(file.mimetype)) {
       return callback(null, false);
     }
@@ -71,7 +72,8 @@ export class UploadController {
         throw new BadRequestException('未选择要上传的文件');
       }
 
-      // 生成压缩后的文件名
+      // 处理压缩和格式转换！
+      // 生成压缩后的文件名,扩展名改为.min.jpeg / 设置压缩后的文件路径
       const compressedFilename = `${path.basename(file.filename, path.extname(file.filename))}.min.jpeg`;
       const compressedFilePath = `./uploads/${compressedFilename}`;
 
@@ -134,16 +136,14 @@ export class UploadController {
    * @param outputPath 输出文件路径
    */
   private async compressAndConvertImage(inputPath: string, outputPath: string): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const sharp = require('sharp');
-
+    // 使用 sharp 库处理图像，进行缩放、转换格式和压缩质量设置
     await sharp(inputPath)
       .resize(800, 600, {
-        fit: sharp.fit.inside,
-        withoutEnlargement: true,
+        fit: sharp.fit.inside, // 使用 inside 适应方式缩放图像
+        withoutEnlargement: true, // 防止图像被放大
       })
-      .toFormat('jpeg')
-      .jpeg({ quality: 80 })
-      .toFile(outputPath);
+      .toFormat('jpeg') // 转换图像格式为 jpeg
+      .jpeg({ quality: 80 }) // 设置图像压缩质量为 80%
+      .toFile(outputPath); // 输出处理后的图像到指定路径
   }
 }
