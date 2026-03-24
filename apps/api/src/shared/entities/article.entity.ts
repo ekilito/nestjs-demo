@@ -44,8 +44,8 @@ export class Article {
   @ApiProperty({ description: '标签列表', type: () => [Tag] })
   tags: Tag[];
 
-  @Column({ type: 'enum', enum: ArticleStateEnum, default: 'draft' })
-  @ApiProperty({ description: '审核状态', example: 'draft', enum: ArticleStateEnum })
+  @Column({ type: 'enum', enum: ArticleStateEnum, default: ArticleStateEnum.DRAFT })
+  @ApiProperty({ description: '审核状态', example: ArticleStateEnum.DRAFT, enum: ArticleStateEnum })
   state: ArticleStateEnum;
 
   @Column({ type: 'text', nullable: true })
