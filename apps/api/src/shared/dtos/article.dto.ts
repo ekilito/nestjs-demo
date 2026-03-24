@@ -37,6 +37,7 @@ export class CreateArticleDto {
   @IsEnum(ArticleStateEnum)
   @IsOptional()
   @ApiPropertyOptional({ description: '审核状态', example: 'draft', enum: ArticleStateEnum })
+  @Transform(({ value }) => ArticleStateEnum[value]) // 转换为枚举值
   state?: ArticleStateEnum;
 
   @IsString()
@@ -67,4 +68,17 @@ export class ArticlePageDto extends PageDto {
   @IsOptional()
   @ApiPropertyOptional({ description: '审核状态', example: 'draft', enum: ArticleStateEnum })
   state?: ArticleStateEnum;
+}
+
+export class ArticleActionDto {
+  @IsString()
+  @ApiProperty({ description: 'ID', example: '12345678901234567890' })
+  id: string;
+
+  @IsEnum(ArticleStateEnum)
+  action: ArticleStateEnum;
+
+  @IsOptional()
+  @IsString()
+  rejectionReason?: string;
 }

@@ -22,6 +22,7 @@ import {
   CreateArticleDto,
   ArticlePageDto,
   UpdateArticleDto,
+  ArticleActionDto,
 } from '../../shared/dtos/article.dto';
 import { Result } from '../../shared/vo/result';
 import { ArticleService } from '../../shared/services/article.service';
@@ -82,5 +83,10 @@ export class ArticleController {
   @ApiResponse({ status: 200, description: '成功返回文章详情', type: Article })
   async getDetail(@Param('id') id: string) {
     return await this.articleService.getDetailById(id);
+  }
+
+  @Post('action')
+  async changeState(@Body() dto: ArticleActionDto) {
+
   }
 }

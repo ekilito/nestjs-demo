@@ -18,7 +18,7 @@ export class Article {
   }
 
   @Column({ length: 50 })
-  @ApiProperty({ description: '标题', example: '标题' })
+  @ApiProperty({ description: '标题', example: '文章标题' })
   title: string;
 
 
