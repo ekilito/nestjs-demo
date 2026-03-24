@@ -57,9 +57,11 @@ export class UploadController {
     schema: {
       type: 'object',
       properties: {
-        url: { type: 'string', example: '/uploads/xxx.jpeg' },
+        url: { type: 'string', example: 'https://bucket-123.cos.region.myqcloud.com/uploads/2026-03-24/xxx.min.jpeg' },
         originalName: { type: 'string', example: 'photo.png' },
         size: { type: 'number', example: 102400 },
+        mimetype: { type: 'string', example: 'image/jpeg' },
+        localUrl: { type: 'string', example: '/uploads/xxx.min.jpeg' },
       },
     },
   })
@@ -114,11 +116,9 @@ export class UploadController {
       if (file?.path) {
         await fs.unlink(file.path).catch(() => { });
       }
-
       if (error instanceof BadRequestException) {
         throw error;
       }
-
       throw new InternalServerErrorException(`文件处理失败：${error.message}`);
     }
   }
