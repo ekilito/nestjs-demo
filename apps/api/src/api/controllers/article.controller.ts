@@ -9,7 +9,12 @@ import {
   Post,
   Delete,
   Param,
+  Header,
+  NotFoundException,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import {
   ApiBody,
   ApiOperation,
@@ -28,6 +33,7 @@ import { Result } from '../../shared/vo/result';
 import { ArticleService } from '../../shared/services/article.service';
 import { Article } from '../../shared/entities/article.entity';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { WordExportService } from '../../shared/services/word-export.service';
 
 @ApiTags('Article')
 @SerializeOptions({ strategy: 'exposeAll' }) // 序列化选项 - 暴露所有属性
@@ -38,6 +44,7 @@ export class ArticleController {
   constructor(
     private readonly articleService: ArticleService, // 注入文章服务
     private readonly eventEmitter: EventEmitter2, // 注入事件发射器
+    private readonly wordExportService: WordExportService, // 注入 Word 导出服务
   ) { }
 
   @Post('page')
@@ -96,5 +103,59 @@ export class ArticleController {
   @ApiResponse({ status: 200, description: '成功修改文章状态', type: Article })
   async changeState(@Body() dto: ArticleActionDto) {
     return await this.articleService.action(dto);
+  }
+
+  // 导出word
+  @Get(':id/export-word')
+  @ApiOperation({ summary: '导出文章为 Word 文档' })
+  @ApiParam({ name: 'id', description: '文章 ID', type: String })
+  @ApiResponse({
+    status: 200,
+    description: '成功导出 Word 文档',
+    content: {
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {},
+    },
+  })
+  @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+  async exportWord(@Param('id') id: string, @Res({ passthrough: true }) res: Response) {
+    const article = await this.articleService.findOne({
+      where: { id },
+      relations: ['categories', 'tags'],
+    });
+
+    if (!article) throw new NotFoundException('Article not found');
+
+    // 将枚举状态转换为中文
+    const stateMap = {
+      0: '草稿',
+      1: '待审核',
+      2: '已发布',
+      3: '已拒绝',
+      4: '已撤回',
+    };
+
+    const htmlContent = `
+      <h1 style="font-size: 24px; margin-bottom: 20px;">${article.title}</h1>
+      <div style="margin-bottom: 15px;">
+        <p><strong>状态:</strong> ${stateMap[article.state] || '未知'}</p>
+        <p><strong>分类:</strong> ${article.categories.map(c => c.categoryName).join(', ') || '无'}</p>
+        <p><strong>标签:</strong> ${article.tags.map(t => t.tagName).join(', ') || '无'}</p>
+        <p><strong>创建时间:</strong> ${new Date(article.createdAt).toLocaleString('zh-CN')}</p>
+        <p><strong>更新时间:</strong> ${new Date(article.updatedAt).toLocaleString('zh-CN')}</p>
+      </div>
+      <hr style="margin: 20px 0;"/>
+      <div style="line-height: 1.8;">
+        ${article.content || ''}
+      </div>
+    `;
+
+    const buffer = await this.wordExportService.exportToWord(htmlContent);
+
+    // 设置文件名并处理中文
+    const fileName = `${article.title}.docx`;
+    const encodedFileName = encodeURIComponent(fileName).replace(/'/g, '%27');
+
+    res.setHeader('Content-Disposition', `attachment; filename="${encodedFileName}"; filename*=UTF-8''${encodedFileName}`);
+    return new StreamableFile(buffer);
   }
 }

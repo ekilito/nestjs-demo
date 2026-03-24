@@ -19,6 +19,8 @@ import { ArticleService } from './services/article.service';
 import { CosService } from './services/cos.service';
 import { NotificationService } from './services/notification.service';
 import { MailService } from './services/mail.service';
+import { WordExportService } from './services/word-export.service';
+
 
 @Global()
 @Module({
@@ -54,6 +56,7 @@ import { MailService } from './services/mail.service';
     CosService,
     NotificationService,
     MailService,
+    WordExportService,
   ], // 注册服务类，使其可以被注入使用
   exports: [
     ConfigurationService,
@@ -68,6 +71,7 @@ import { MailService } from './services/mail.service';
     CosService,
     NotificationService,
     MailService,
+    WordExportService,
   ], // 导出服务类，使其在其他模块可用
 })
 export class SharedModule { }
