@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ArticleService } from '../../shared/services/article.service';
 import { UserService } from '../../shared/services/user.service';
+import { MailService } from './mail.service';
 
 @Injectable()
 export class NotificationService {
@@ -10,6 +11,7 @@ export class NotificationService {
   constructor(
     private readonly articleService: ArticleService,
     private readonly userService: UserService,
+    private readonly mailService: MailService,
   ) { }
 
   @OnEvent('article.submitted')
@@ -30,6 +32,7 @@ export class NotificationService {
         // TODO: 替换为实际的邮件发送逻辑
         this.logger.log(`发送邮件通知 - 收件人：${admin.email}, 主题：${subject}`);
         console.log(admin.email, subject);
+        this.mailService.sendEmail(admin.email, subject, '请登录后台审核文章');
       }
     } catch (error) {
       this.logger.error(`处理文章提交通知失败：${error.message}`);
