@@ -85,8 +85,12 @@ export class ArticleController {
     return await this.articleService.getDetailById(id);
   }
 
+  // 审核
   @Post('action')
+  @ApiOperation({ summary: '修改状态' })
+  @ApiBody({ type: ArticleActionDto })
+  @ApiResponse({ status: 200, description: '成功修改文章状态', type: Article })
   async changeState(@Body() dto: ArticleActionDto) {
-
+    return await this.articleService.action(dto);
   }
 }

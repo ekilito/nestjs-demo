@@ -6,11 +6,12 @@ import {
 import { MySQLBaseService } from './mysql-base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository, FindManyOptions } from 'typeorm';
-import { CreateArticleDto, UpdateArticleDto } from '../dtos/article.dto';
+import { CreateArticleDto, UpdateArticleDto, ArticleActionDto } from '../dtos/article.dto';
 import { Article } from '../entities/article.entity';
 import { Category } from '../entities/category.entity';
 import { Tag } from '../entities/tag.entity';
 import { bindManyToManyRelation } from '../utils/comm';
+import { ArticleStateEnum } from '../enums/article.enum';
 
 @Injectable()
 export class ArticleService extends MySQLBaseService<Article> {
@@ -106,7 +107,7 @@ export class ArticleService extends MySQLBaseService<Article> {
    * @param id
    * 🙅
    * 中间表（categories / tags）会自动删除
-   * 不用 ManyToMany，而是中间表是“独立实体” 是需要的
+   * 不用 ManyToMany，而是中间表是"独立实体" 是需要的
    */
   async deleteWithRelations(id: string): Promise<void> {
     const article = await this.repository.findOne({
@@ -117,5 +118,58 @@ export class ArticleService extends MySQLBaseService<Article> {
     }
     // TypeORM 会自动删除中间表记录，直接删除即可
     await this.repository.delete(id);
+  }
+
+  /**
+   * 审核文章 - 修改状态
+   * @param dto 审核 DTO
+   * @returns 更新后的文章
+   */
+  async action(dto: ArticleActionDto): Promise<Article> {
+    const { id, state, rejectionReason } = dto;
+
+    // 查找文章
+    const article = await this.repository.findOne({
+      where: { id },
+    });
+
+    if (!article) {
+      throw new NotFoundException(`Record with ID ${id} not found`);
+    }
+
+    // 验证状态转换的合法性
+    const validTransitions = {
+      [ArticleStateEnum.DRAFT]: [ArticleStateEnum.PENDING],
+      [ArticleStateEnum.PENDING]: [ArticleStateEnum.PUBLISHED, ArticleStateEnum.REJECTED, ArticleStateEnum.WITHDRAWN],
+      [ArticleStateEnum.PUBLISHED]: [ArticleStateEnum.WITHDRAWN],
+      [ArticleStateEnum.REJECTED]: [ArticleStateEnum.DRAFT, ArticleStateEnum.PENDING],
+      [ArticleStateEnum.WITHDRAWN]: [ArticleStateEnum.DRAFT, ArticleStateEnum.PENDING],
+    };
+
+    const currentState = article.state;
+    const allowedNextStates = validTransitions[currentState] || [];
+
+    if (!allowedNextStates.includes(state)) {
+      throw new BadRequestException(
+        `Invalid state transition from ${ArticleStateEnum[currentState]} to ${ArticleStateEnum[state]}`,
+      );
+    }
+
+    // 如果是拒绝操作，需要填写拒绝原因
+    if (state === ArticleStateEnum.REJECTED && !rejectionReason) {
+      throw new BadRequestException('拒绝审核时必须填写拒绝原因');
+    }
+
+    // 更新状态
+    article.state = state;
+
+    // 如果是否决原因，保存拒绝原因；否则清空
+    if (state === ArticleStateEnum.REJECTED) {
+      article.rejectionReason = rejectionReason ?? '';
+    } else {
+      article.rejectionReason = '';
+    }
+
+    return await this.repository.save(article);
   }
 }

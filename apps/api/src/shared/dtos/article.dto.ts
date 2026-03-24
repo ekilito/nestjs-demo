@@ -76,7 +76,8 @@ export class ArticleActionDto {
   id: string;
 
   @IsEnum(ArticleStateEnum)
-  action: ArticleStateEnum;
+  @ApiProperty({ description: '状态', example: ArticleStateEnum.DRAFT, enum: ArticleStateEnum })
+  state: ArticleStateEnum;
 
   @IsOptional()
   @IsString()
