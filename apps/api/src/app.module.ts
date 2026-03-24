@@ -12,9 +12,16 @@ import {
 } from 'nestjs-i18n';
 import * as path from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
+    // 配置 EventEmitterModule 模块
+    EventEmitterModule.forRoot({
+      wildcard: true,  // 启用通配符功能，允许使用通配符来订阅事件
+      delimiter: '.', // 设置事件名的分隔符，这里使用 '.' 作为分隔符
+      global: true  // 将事件发射器设置为全局模块，所有模块都可以共享同一个事件发射器实例
+    }),
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '..', 'uploads'),
       // rootPath: join(process.cwd(), 'uploads'), // 使用项目根目录

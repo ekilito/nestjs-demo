@@ -12,6 +12,7 @@ import { Category } from '../entities/category.entity';
 import { Tag } from '../entities/tag.entity';
 import { bindManyToManyRelation } from '../utils/comm';
 import { ArticleStateEnum } from '../enums/article.enum';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ArticleService extends MySQLBaseService<Article> {
@@ -20,6 +21,7 @@ export class ArticleService extends MySQLBaseService<Article> {
     protected repository: Repository<Article>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
+    private readonly eventEmitter: EventEmitter2, // 注入事件发射器
   ) {
     super(repository);
   }
@@ -72,7 +74,14 @@ export class ArticleService extends MySQLBaseService<Article> {
     await bindManyToManyRelation(categoryRepo, categoryIds, 'categories', entity);
     await bindManyToManyRelation(tagRepo, tagIds, 'tags', entity);
 
-    return await this.repository.save(entity);
+    const savedEntity = await this.repository.save(entity);
+
+    // 如果文章状态是待审核，触发通知事件
+    if (savedEntity.state === ArticleStateEnum.PENDING) {
+      this.eventEmitter.emit('article.submitted', { articleId: savedEntity.id });
+    }
+
+    return savedEntity;
   }
 
   async update(id: string, data: UpdateArticleDto): Promise<Article> {
@@ -170,6 +179,36 @@ export class ArticleService extends MySQLBaseService<Article> {
       article.rejectionReason = '';
     }
 
-    return await this.repository.save(article);
+    const updatedArticle = await this.repository.save(article);
+
+    // 根据状态变化触发不同的事件
+    if (currentState === ArticleStateEnum.PENDING) {
+      if (state === ArticleStateEnum.PUBLISHED) {
+        // 文章审核通过
+        this.eventEmitter.emit('article.approved', { articleId: updatedArticle.id });
+      } else if (state === ArticleStateEnum.REJECTED) {
+        // 文章审核被拒绝
+        this.eventEmitter.emit('article.rejected', { articleId: updatedArticle.id, reason: rejectionReason });
+      }
+    }
+
+    return updatedArticle;
+    //   用户创建文章 (状态=PENDING)
+    //     ↓
+    // 触发 article.submitted 事件
+    //     ↓
+    // 通知管理员审核
+
+    // 管理员审核通过 (状态→PUBLISHED)
+    //     ↓
+    // 触发 article.approved 事件
+    //     ↓
+    // 通知作者审核结果
+
+    // 管理员审核拒绝 (状态→REJECTED)
+    //     ↓
+    // 触发 article.rejected 事件
+    //     ↓
+    // 通知作者并附带拒绝原因
   }
 }

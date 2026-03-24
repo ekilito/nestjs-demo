@@ -27,6 +27,7 @@ import {
 import { Result } from '../../shared/vo/result';
 import { ArticleService } from '../../shared/services/article.service';
 import { Article } from '../../shared/entities/article.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @ApiTags('Article')
 @SerializeOptions({ strategy: 'exposeAll' }) // 序列化选项 - 暴露所有属性
@@ -34,7 +35,10 @@ import { Article } from '../../shared/entities/article.entity';
 @UseFilters(AdminExceptionFilter) // 异常过滤器 - 用于处理异常情况
 @Controller('article') // 控制器路由前缀 - /article
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) { } // 注入文章服务
+  constructor(
+    private readonly articleService: ArticleService, // 注入文章服务
+    private readonly eventEmitter: EventEmitter2, // 注入事件发射器
+  ) { }
 
   @Post('page')
   @ApiOperation({ summary: '文章分页' })

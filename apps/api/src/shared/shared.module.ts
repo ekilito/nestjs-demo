@@ -17,6 +17,7 @@ import { CategoryService } from './services/category.service';
 import { Article } from './entities/article.entity';
 import { ArticleService } from './services/article.service';
 import { CosService } from './services/cos.service';
+import { NotificationService } from './services/notification.service';
 
 @Global()
 @Module({
@@ -50,6 +51,7 @@ import { CosService } from './services/cos.service';
     CategoryService,
     ArticleService,
     CosService,
+    NotificationService,
   ], // 注册服务类，使其可以被注入使用
   exports: [
     ConfigurationService,
@@ -62,6 +64,7 @@ import { CosService } from './services/cos.service';
     CategoryService,
     ArticleService,
     CosService,
+    NotificationService,
   ], // 导出服务类，使其在其他模块可用
 })
 export class SharedModule { }
