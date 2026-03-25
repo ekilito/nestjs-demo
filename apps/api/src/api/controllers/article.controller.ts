@@ -15,6 +15,7 @@ import {
   Res,
   StreamableFile,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import {
@@ -133,6 +134,7 @@ export class ArticleController {
   // 设置响应头
   // application：二进制文件 vnd.openxmlformats：微软 OpenXML 格式 wordprocessingml：word 文档 document: 文档
   @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+  @HttpCode(200)
   async exportWord(@Body('id') id: string, @Res() res: Response) {
     if (!id) {
       throw new BadRequestException('文章 ID 不能为空');
@@ -158,9 +160,11 @@ export class ArticleController {
 
     // 设置文件名并处理中文
     // 设置响应头 - Content-Disposition: 用于指定文件名和是否下载
-    // attachment: 表示文件作为附件下载 filename: 指定文件名 filename*: UTF-8 编码的文件名
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(`${article.title}.docx`)}`);
-    console.log('设置的 Content-Disposition:', res.getHeader('Content-Disposition'));
+    // attachment: 表示文件作为附件下载 
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=${encodeURIComponent(`${article.title}.docx`)}`
+    );
     res.send(buffer); // ✅ 直接使用 res.send 发送，绕过拦截器
   }
 }
