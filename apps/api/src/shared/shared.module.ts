@@ -26,6 +26,7 @@ import { ExcelExportService } from './services/excel-export.service'; // 引入 
 import { SettingService } from './services/setting.service';
 import { DashboardService } from './services/dashboard.service'; // 引入 Dashboard 服务
 import { WeatherService } from './services/weather.service'; // 引入天气服务
+import { SystemService } from './services/system.service'; // 引入系统信息服务
 
 
 @Global()
@@ -68,6 +69,7 @@ import { WeatherService } from './services/weather.service'; // 引入天气服�
     SettingService,
     DashboardService, // 注册 Dashboard 服务
     WeatherService, // 注册天气服务
+    SystemService, // 注册系统信息服务
   ], // 注册服务类，使其可以被注入使用
   exports: [
     ConfigurationService,
@@ -88,6 +90,7 @@ import { WeatherService } from './services/weather.service'; // 引入天气服�
     SettingService,
     DashboardService, // 导出 Dashboard 服务，使其在其他模块可用
     WeatherService, // 导出天气服务，使其在其他模块可用
+    SystemService, // 导出系统信息服务，使其在其他模块可用
   ], // 导出服务类，使其在其他模块可用
 })
 export class SharedModule { }
