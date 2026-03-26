@@ -9,7 +9,7 @@ export class DashboardController {
   constructor(
     private readonly dashboardService: DashboardService
   ) { }
-  @Get('counts')
+  @Get('overview')
   @ApiOperation({ summary: '数据概览' })
   async dashboard() {
     return await this.dashboardService.getDashboardData();
