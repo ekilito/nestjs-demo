@@ -8,10 +8,11 @@ import { ArticleController } from './controllers/article.controller';
 import { UploadController } from './controllers/upload.controller';
 import { SettingController } from './controllers/setting.controller';
 import { WordExportService } from '../shared/services/word-export.service';
+import { DashboardController } from './controllers/dashboard.controller';
 
 
 @Module({
-  controllers: [UserController, RoleController, AccessController, TagController, CategoryController, ArticleController, UploadController, SettingController],
+  controllers: [UserController, RoleController, AccessController, TagController, CategoryController, ArticleController, UploadController, SettingController, DashboardController],
   providers: [WordExportService], // 注册 Word 导出服务
 })
 export class ApiModule { }

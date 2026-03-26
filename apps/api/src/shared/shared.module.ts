@@ -24,6 +24,7 @@ import { WordExportService } from './services/word-export.service';
 import { PptExportService } from './services/ppt-export.service'; // 引入 PPT 导出服务
 import { ExcelExportService } from './services/excel-export.service'; // 引入 Excel 导出服务
 import { SettingService } from './services/setting.service';
+import { DashboardService } from './services/dashboard.service'; // 引入 Dashboard 服务
 
 
 @Global()
@@ -64,6 +65,7 @@ import { SettingService } from './services/setting.service';
     PptExportService, // 注册 PPT 导出服务
     ExcelExportService, // 注册 Excel 导出服务
     SettingService,
+    DashboardService, // 注册 Dashboard 服务
   ], // 注册服务类，使其可以被注入使用
   exports: [
     ConfigurationService,
@@ -82,6 +84,7 @@ import { SettingService } from './services/setting.service';
     PptExportService, // 导出 PPT 导出服务，使其在其他模块可用
     ExcelExportService, // 导出 Excel 导出服务，使其在其他模块可用
     SettingService,
+    DashboardService, // 导出 Dashboard 服务，使其在其他模块可用
   ], // 导出服务类，使其在其他模块可用
 })
 export class SharedModule { }
