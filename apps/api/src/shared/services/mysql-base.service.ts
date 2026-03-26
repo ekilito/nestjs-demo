@@ -355,4 +355,28 @@ export abstract class MySQLBaseService<T> {
   async getTotal(options?: FindManyOptions<T>): Promise<number> {
     return this.count(options);
   }
+
+  /**
+   * 获取最新记录（按 createdAt 倒序）
+   */
+  async findLatest(limit: number = 5): Promise<T[]> {
+    try {
+      const hasCreatedAt = this.repository.metadata.columns.some(
+        (column) => column.propertyName === 'createdAt',
+      );
+      if (!hasCreatedAt) {
+        throw new Error(
+          `${this.repository.metadata.name} does not have createdAt column`,
+        );
+      }
+
+      return await this.repository.find({
+        order: { createdAt: 'DESC' } as any,
+        take: limit,  // 限制返回记录数
+      });
+    } catch (error) {
+      this.logger.error(`Failed to get latest records: ${error.message}`);
+      throw error;
+    }
+  }
 }
