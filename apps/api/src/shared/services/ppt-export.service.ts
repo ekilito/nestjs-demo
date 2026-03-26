@@ -4,7 +4,7 @@ import * as html2ppt from 'html-pptxgenjs'; // 导入 html-pptxgenjs 库，用�
 
 @Injectable()
 export class PptExportService {
-  async exportToPpt(htmlSlides: string[]) {
+  async exportToPpt(htmlSlides: string[]): Promise<Buffer> {
     const pptx = new PptxGenJS();
     // 遍历每一页 HTML 内容，转换为 PPT 幻灯片
     for (const htmlContent of htmlSlides) {
@@ -16,6 +16,9 @@ export class PptExportService {
       slide.addText(items, { x: 0.5, y: 0.5, w: 9.5, h: 6, valign: 'top' });
     }
     // 将生成的 PPTX 文件以 nodebuffer 的形式输出
-    return await pptx.write({ outputType: 'nodebuffer' });
+    const fileBuffer = await pptx.write({ outputType: 'nodebuffer' });
+    return Buffer.isBuffer(fileBuffer)
+      ? fileBuffer
+      : Buffer.from(fileBuffer as ArrayBuffer);
   }
 }
