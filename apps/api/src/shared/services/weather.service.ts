@@ -17,27 +17,31 @@ export class WeatherService {
 
   async getExternalIP() {
     try {
-      const ipApiUrl = this.getConfigOrThrow('IP_API_URL');
+      const ipApiUrl = this.configService.get<string>('IP_API_URL');
+      if (!ipApiUrl) {
+        return 'auto:ip';
+      }
       const response = await axios.get(ipApiUrl);
       return response.data.ip;
     } catch (error: unknown) {
       console.error('Error fetching external IP:', error);
-      return 'N/A';
+      return 'auto:ip';
     }
   }
 
   async getWeather() {
     const ip = await this.getExternalIP();
     const geo = geoip.lookup(ip);
-    const location = geo ? `${geo.city}, ${geo.country}` : 'Unknown';
+    const location = geo ? `${geo.city}, ${geo.country}` : ip;
     let weather = '无法获取天气信息';
     try {
-      if (geo) {
-        const apiKey = this.getConfigOrThrow('WEATHER_API_KEY');
-        const weatherApiUrl = this.getConfigOrThrow('WEATHER_API_URL');
-        const response = await axios.get(`${weatherApiUrl}?lang=zh&key=${apiKey}&q=${location}`);
-        weather = `${response.data.current.temp_c}°C, ${response.data.current.condition.text}`;
-      }
+      const apiKey = this.getConfigOrThrow('WEATHER_API_KEY');
+      const weatherApiUrl = this.getConfigOrThrow('WEATHER_API_URL');
+      const query = location || 'auto:ip';
+      const response = await axios.get(
+        `${weatherApiUrl}?lang=zh&key=${apiKey}&q=${query}`,
+      );
+      weather = `${response.data.current.temp_c}°C, ${response.data.current.condition.text}`;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('获取天气信息失败:', message);
