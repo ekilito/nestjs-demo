@@ -13,6 +13,8 @@ import { ApiExceptionFilter } from './api/filters/exception.filter';
 import { I18nValidationPipe, I18nService } from 'nestjs-i18n';
 import { useContainer } from 'class-validator';
 import { SuccessResponseInterceptor } from './shared/interceptors/success-response.interceptor';
+import { RedisStore } from 'connect-redis';
+import { RedisService } from './shared/services/redis.service';
 
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
@@ -53,9 +55,12 @@ async function bootstrap() {
 
   // ✅ 4. 解析cookie 并将其挂载到req.cookies上
   app.use(cookieParser());
+  const redisService = app.get(RedisService);
+  const redisClient = redisService.getClient();
   // 配置session中间件
   app.use(
     session({
+      store: new RedisStore({ client: redisClient }), // 使用 Redis 存储会话数据
       secret: 'secret-key', // 用于加密session数据的密钥
       resave: true, // 每次请求都重新保存session 即使未修改
       saveUninitialized: true, // 无论是否有修改 都保存session

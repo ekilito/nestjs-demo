@@ -32,4 +32,22 @@ export class ConfigurationService {
       password: this.mysqlPass,
     };
   }
+
+  // redis 配置项
+  get redisHost(): string {
+    return this.configService.get<string>('REDIS_HOST') ?? '127.0.0.1';
+  }
+  get redisPort(): number {
+    return this.configService.get<number>('REDIS_PORT') ?? 6379;
+  }
+  get redisPassword(): string | undefined {
+    return this.configService.get<string>('REDIS_PASSWORD');
+  }
+  get redisConfig() {
+    return {
+      host: this.redisHost,
+      port: this.redisPort,
+      password: this.redisPassword
+    }
+  }
 }
