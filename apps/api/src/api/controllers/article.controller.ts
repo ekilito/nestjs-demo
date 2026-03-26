@@ -35,6 +35,7 @@ import { ArticleService } from '../../shared/services/article.service';
 import { Article } from '../../shared/entities/article.entity';
 import { WordExportService } from '../../shared/services/word-export.service';
 import { PptExportService } from '../../shared/services/ppt-export.service';
+import { ExcelExportService } from '../../shared/services/excel-export.service';
 
 @ApiTags('Article')
 @SerializeOptions({ strategy: 'exposeAll' }) // 序列化选项 - 暴露所有属性
@@ -46,6 +47,7 @@ export class ArticleController {
     private readonly articleService: ArticleService, // 注入文章服务
     private readonly wordExportService: WordExportService, // 注入 Word 导出服务
     private readonly pptExportService: PptExportService, // 注入 PPT 导出服务
+    private readonly excelExportService: ExcelExportService, // 注入 Excel 导出服务
   ) { }
 
   @Post('page')
@@ -217,6 +219,74 @@ export class ArticleController {
     res.setHeader(
       'Content-Disposition',
       `attachment; filename=${encodeURIComponent(`${article.title}.pptx`)}`,
+    );
+    res.send(buffer);
+  }
+
+  @Post('export-excel')
+  @ApiOperation({ summary: '导出 Excel' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          description: '文章 ID',
+          example: '12345678901234567890',
+        },
+      },
+      required: ['id'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: '成功导出 Excel 文档',
+    content: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {},
+    },
+  })
+  @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  @HttpCode(200)
+  async exportExcel(@Body('id') id: string, @Res() res: Response) {
+    if (!id) {
+      throw new BadRequestException('文章 ID 不能为空');
+    }
+
+    const article = await this.articleService.findOne({
+      where: { id },
+      relations: ['categories', 'tags'],
+    });
+
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+
+    const rows = [
+      {
+        title: article.title,
+        state: article.state,
+        categories:
+          article.categories.map((c) => c.categoryName).join(', ') || '无',
+        tags: article.tags.map((t) => t.tagName).join(', ') || '无',
+        content: article.content,
+      },
+    ];
+    const columns = [
+      { header: '标题', key: 'title', width: 30 },
+      { header: '状态', key: 'state', width: 15 },
+      { header: '分类', key: 'categories', width: 30 },
+      { header: '标签', key: 'tags', width: 30 },
+      { header: '内容', key: 'content', width: 80 },
+    ];
+    const buffer = await this.excelExportService.exportAsExcel(
+      rows,
+      columns,
+      'Article',
+    );
+
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=${encodeURIComponent(`${article.title}.xlsx`)}`,
     );
     res.send(buffer);
   }
