@@ -15,6 +15,7 @@ import { TagService } from './services/tag.service';
 import { Category } from './entities/category.entity';
 import { CategoryService } from './services/category.service';
 import { Article } from './entities/article.entity';
+import { Setting } from './entities/setting.entity';
 import { ArticleService } from './services/article.service';
 import { CosService } from './services/cos.service';
 import { NotificationService } from './services/notification.service';
@@ -22,6 +23,7 @@ import { MailService } from './services/mail.service';
 import { WordExportService } from './services/word-export.service';
 import { PptExportService } from './services/ppt-export.service'; // 引入 PPT 导出服务
 import { ExcelExportService } from './services/excel-export.service'; // 引入 Excel 导出服务
+import { SettingService } from './services/setting.service';
 
 
 @Global()
@@ -43,7 +45,7 @@ import { ExcelExportService } from './services/excel-export.service'; // 引入 
         logging: false, // 关闭SQL日志输出（生产环境建议开启）
       }),
     }),
-    TypeOrmModule.forFeature([User, Role, Access, Tag, Category, Article]), // 注册 User、Role、Access、Tag、Category 实体类，使其在当前模块可用
+    TypeOrmModule.forFeature([User, Role, Access, Tag, Category, Article, Setting]), // 注册实体类，使其在当前模块可用
   ],
   providers: [
     ConfigurationService,
@@ -61,6 +63,7 @@ import { ExcelExportService } from './services/excel-export.service'; // 引入 
     WordExportService,
     PptExportService, // 注册 PPT 导出服务
     ExcelExportService, // 注册 Excel 导出服务
+    SettingService,
   ], // 注册服务类，使其可以被注入使用
   exports: [
     ConfigurationService,
@@ -78,6 +81,7 @@ import { ExcelExportService } from './services/excel-export.service'; // 引入 
     WordExportService,
     PptExportService, // 导出 PPT 导出服务，使其在其他模块可用
     ExcelExportService, // 导出 Excel 导出服务，使其在其他模块可用
+    SettingService,
   ], // 导出服务类，使其在其他模块可用
 })
 export class SharedModule { }
