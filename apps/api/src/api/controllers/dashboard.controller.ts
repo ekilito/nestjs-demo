@@ -18,6 +18,7 @@ export class DashboardController {
   }
 
   @Get('/weather')
+  @ApiOperation({ summary: '天气预报' })
   async getWeather() {
     const weather = await this.weatherService.getWeather();
     return { weather };
