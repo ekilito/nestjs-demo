@@ -9,7 +9,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { MyLogger } from './logger';
 import { ExtendedConsoleLogger } from './extended-console-logger';
-import { AdminExceptionFilter } from './api/filters/exception.filter';
+import { ApiExceptionFilter } from './api/filters/exception.filter';
 import { I18nValidationPipe, I18nService } from 'nestjs-i18n';
 import { useContainer } from 'class-validator';
 import { SuccessResponseInterceptor } from './shared/interceptors/success-response.interceptor';
@@ -43,7 +43,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // ✅ 配置全局异常过滤器（处理所有异常）
-  app.useGlobalFilters(new AdminExceptionFilter(app.get(I18nService)));
+  app.useGlobalFilters(new ApiExceptionFilter(app.get(I18nService)));
 
   app.useGlobalInterceptors(new SuccessResponseInterceptor());
 

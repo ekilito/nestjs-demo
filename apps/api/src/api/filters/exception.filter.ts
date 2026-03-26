@@ -13,7 +13,7 @@ import { QueryFailedError } from 'typeorm';
 
 // 使用 @Catch 装饰器捕获所有 HttpException 异常
 @Catch()
-export class AdminExceptionFilter implements ExceptionFilter {
+export class ApiExceptionFilter implements ExceptionFilter {
   constructor(private readonly i18n: I18nService) { }
   catch(exception: unknown, host: ArgumentsHost) {
     // 实现 catch 方法，用于处理捕获的异常

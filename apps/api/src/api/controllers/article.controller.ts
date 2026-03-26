@@ -23,7 +23,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AdminExceptionFilter } from '../filters/exception.filter';
+import { ApiExceptionFilter } from '../filters/exception.filter';
 import {
   CreateArticleDto,
   ArticlePageDto,
@@ -40,7 +40,7 @@ import { ExcelExportService } from '../../shared/services/excel-export.service';
 @ApiTags('Article')
 @SerializeOptions({ strategy: 'exposeAll' }) // 序列化选项 - 暴露所有属性
 @UseInterceptors(ClassSerializerInterceptor) // 类序列化拦截器 - 用于序列化响应数据
-@UseFilters(AdminExceptionFilter) // 异常过滤器 - 用于处理异常情况
+@UseFilters(ApiExceptionFilter) // 异常过滤器 - 用于处理异常情况
 @Controller('article') // 控制器路由前缀 - /article
 export class ArticleController {
   constructor(

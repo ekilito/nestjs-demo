@@ -17,7 +17,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AdminExceptionFilter } from '../filters/exception.filter';
+import { ApiExceptionFilter } from '../filters/exception.filter';
 import {
   CreateAccessDto,
   AccessPageDto,
@@ -30,7 +30,7 @@ import { Access } from '../../shared/entities/access.entity';
 @ApiTags('Access')
 @SerializeOptions({ strategy: 'exposeAll' }) // 序列化选项 - 暴露所有属性
 @UseInterceptors(ClassSerializerInterceptor) // 类序列化拦截器 - 用于序列化响应数据
-@UseFilters(AdminExceptionFilter) // 异常过滤器 - 用于处理异常情况
+@UseFilters(ApiExceptionFilter) // 异常过滤器 - 用于处理异常情况
 @Controller('access') // 控制器路由前缀 - /access
 export class AccessController {
   constructor(private readonly accessService: AccessService) { } // 注入访问服务

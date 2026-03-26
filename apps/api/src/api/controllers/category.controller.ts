@@ -17,7 +17,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AdminExceptionFilter } from '../filters/exception.filter';
+import { ApiExceptionFilter } from '../filters/exception.filter';
 import {
   CreateCategoryDto,
   UpdateCategoryDto,
@@ -29,7 +29,7 @@ import { Category } from '../../shared/entities/category.entity';
 @ApiTags('Category')
 @SerializeOptions({ strategy: 'exposeAll' }) // 序列化选项 - 暴露所有属性
 @UseInterceptors(ClassSerializerInterceptor) // 类序列化拦截器 - 用于序列化响应数据
-@UseFilters(AdminExceptionFilter) // 异常过滤器 - 用于处理异常情况
+@UseFilters(ApiExceptionFilter) // 异常过滤器 - 用于处理异常情况
 @Controller('category') // 控制器路由前缀 - /category
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) { } // 注入分类服务
