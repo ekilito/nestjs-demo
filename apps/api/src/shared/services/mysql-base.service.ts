@@ -380,6 +380,9 @@ export abstract class MySQLBaseService<T> {
     }
   }
 
+  /**
+   *  获取趋势数据（最近 N 天每天的记录数）
+   */
   async getTrend(days: number = 30): Promise<{ dates: string[]; counts: number[] }> {
     const hasCreatedAt = this.repository.metadata.columns.some(
       (column) => column.propertyName === 'createdAt',
