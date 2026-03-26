@@ -13,8 +13,6 @@ import {
   NotFoundException,
   BadRequestException,
   Res,
-  StreamableFile,
-  UseGuards,
   HttpCode,
 } from '@nestjs/common';
 import type { Response } from 'express';
@@ -35,8 +33,8 @@ import {
 import { Result } from '../../shared/vo/result';
 import { ArticleService } from '../../shared/services/article.service';
 import { Article } from '../../shared/entities/article.entity';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WordExportService } from '../../shared/services/word-export.service';
+import { PptExportService } from '../../shared/services/ppt-export.service';
 
 @ApiTags('Article')
 @SerializeOptions({ strategy: 'exposeAll' }) // 序列化选项 - 暴露所有属性
@@ -46,8 +44,8 @@ import { WordExportService } from '../../shared/services/word-export.service';
 export class ArticleController {
   constructor(
     private readonly articleService: ArticleService, // 注入文章服务
-    private readonly eventEmitter: EventEmitter2, // 注入事件发射器
     private readonly wordExportService: WordExportService, // 注入 Word 导出服务
+    private readonly pptExportService: PptExportService, // 注入 PPT 导出服务
   ) { }
 
   @Post('page')
@@ -77,7 +75,7 @@ export class ArticleController {
   @ApiBody({ type: UpdateArticleDto })
   @ApiResponse({ status: 200, description: '成功更新文章', type: Result })
   async update(@Body() updateArticleDto: UpdateArticleDto) {
-    const { id, ...rest } = updateArticleDto;
+    const { id } = updateArticleDto;
     await this.articleService.update(id, updateArticleDto);
     return null;
   }
@@ -166,5 +164,60 @@ export class ArticleController {
       `attachment; filename=${encodeURIComponent(`${article.title}.docx`)}`
     );
     res.send(buffer); // ✅ 直接使用 res.send 发送，绕过拦截器
+  }
+
+  @Post('export-ppt')
+  @ApiOperation({ summary: '导出 PPT' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          description: '文章 ID',
+          example: '12345678901234567890',
+        },
+      },
+      required: ['id'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: '成功导出 PPT 文档',
+    content: {
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': {},
+    },
+  })
+  @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
+  @HttpCode(200)
+  async exportPpt(@Body('id') id: string, @Res() res: Response) {
+    if (!id) {
+      throw new BadRequestException('文章 ID 不能为空');
+    }
+
+    const article = await this.articleService.findOne({
+      where: { id },
+      relations: ['categories', 'tags'],
+    });
+
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+
+    const htmlContent = `
+      <h1>${article.title}</h1>
+      <p><strong>状态:</strong> ${article.state}</p>
+      <p><strong>分类:</strong> ${article.categories.map(c => c.categoryName).join(', ') || '无'}</p>
+      <p><strong>标签:</strong> ${article.tags.map(t => t.tagName).join(', ') || '无'}</p>
+      <hr/>
+      ${article.content}
+    `;
+
+    const buffer = await this.pptExportService.exportToPpt([htmlContent]);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=${encodeURIComponent(`${article.title}.pptx`)}`,
+    );
+    res.send(buffer);
   }
 }

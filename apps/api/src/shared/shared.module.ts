@@ -20,6 +20,7 @@ import { CosService } from './services/cos.service';
 import { NotificationService } from './services/notification.service';
 import { MailService } from './services/mail.service';
 import { WordExportService } from './services/word-export.service';
+import { PptExportService } from './services/ppt-export.service'; // 引入 PPT 导出服务
 
 
 @Global()
@@ -57,6 +58,7 @@ import { WordExportService } from './services/word-export.service';
     NotificationService,
     MailService,
     WordExportService,
+    PptExportService, // 注册 PPT 导出服务
   ], // 注册服务类，使其可以被注入使用
   exports: [
     ConfigurationService,
@@ -72,6 +74,7 @@ import { WordExportService } from './services/word-export.service';
     NotificationService,
     MailService,
     WordExportService,
+    PptExportService, // 导出 PPT 导出服务，使其在其他模块可用
   ], // 导出服务类，使其在其他模块可用
 })
 export class SharedModule { }
