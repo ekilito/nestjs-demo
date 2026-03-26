@@ -21,21 +21,30 @@ export class DashboardService {
       tagCount,
       latestArticles,
       latestUsers,
+      articleTrend,
+      userGrowth,
     ] = await Promise.all([
       this.userService.count(),
       this.articleService.count(),
       this.categoryService.count(),
       this.tagService.count(),
+      // 最新数据
       this.articleService.findLatest(5),
       this.userService.findLatest(5),
+      // 图表数据 7天趋势
+      this.articleService.getTrend(7),
+      this.userService.getTrend(7),
     ]);
+
     return {
       userCount,
       articleCount,
       categoryCount,
       tagCount,
       latestArticles,
-      latestUsers
+      latestUsers,
+      articleTrend,
+      userGrowth
     };
   }
 }

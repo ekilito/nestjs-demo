@@ -379,4 +379,56 @@ export abstract class MySQLBaseService<T> {
       throw error;
     }
   }
+
+  async getTrend(days: number = 30): Promise<{ dates: string[]; counts: number[] }> {
+    const hasCreatedAt = this.repository.metadata.columns.some(
+      (column) => column.propertyName === 'createdAt',
+    );
+    if (!hasCreatedAt) {
+      throw new Error(
+        `${this.repository.metadata.name} does not have createdAt column`,
+      );
+    }
+
+    const safeDays = Number.isFinite(days) && days > 0 ? Math.floor(days) : 30;
+    const tableName = this.repository.metadata.tableName;
+    if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
+      throw new Error(`Unsafe table name: ${tableName}`);
+    }
+
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(startDate.getDate() - (safeDays - 1));
+    const startDateStr = startDate.toISOString().slice(0, 10);
+
+    const result = await this.repository.query(
+      `
+      SELECT DATE_FORMAT(createdAt, '%Y-%m-%d') AS date, COUNT(*) AS count
+      FROM \`${tableName}\`
+      WHERE createdAt >= ?
+      GROUP BY DATE_FORMAT(createdAt, '%Y-%m-%d')
+      ORDER BY DATE_FORMAT(createdAt, '%Y-%m-%d') ASC
+      `,
+      [startDateStr],
+    );
+
+    const countMap = new Map<string, number>(
+      result.map((row: { date: string; count: string | number }) => [
+        row.date,
+        Number(row.count),
+      ]),
+    );
+
+    const dates: string[] = [];
+    const counts: number[] = [];
+    for (let i = 0; i < safeDays; i++) {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
+      const date = d.toISOString().slice(0, 10);
+      dates.push(date);
+      counts.push(countMap.get(date) ?? 0);
+    }
+
+    return { dates, counts };
+  }
 }
