@@ -44,6 +44,13 @@ export class RedisService implements OnModuleDestroy {
     return this.redisClient.get(key);
   }
 
+  // 检查键是否存在
+  async exists(key: string): Promise<boolean> {
+    // ioredis 的 exists 方法返回 1 表示存在，0 表示不存在，所以我们需要将结果转换为布尔值
+    const result = await this.redisClient.exists(key);
+    return result === 1;
+  }
+
   // 删除键值对
   async del(key: string): Promise<void> {
     await this.redisClient.del(key);

@@ -22,6 +22,7 @@ import { AuthLoginDto } from '../../shared/dtos/auth.dto';
 import { Result } from '../../shared/vo/result';
 import { User } from '../../shared/entities/user.entity';
 import { AuthGuard } from '../guards/auth.guard';
+import { RedisService } from '../../shared/services/redis.service';
 
 @ApiTags('auth')
 @SerializeOptions({ strategy: 'exposeAll' })
@@ -33,6 +34,7 @@ export class AuthController {
     private readonly utilityService: UtilityService,
     private readonly jwtService: JwtService,
     private readonly configurationService: ConfigurationService,
+    private readonly redisService: RedisService,
   ) { }
 
   @Post('login')
@@ -81,5 +83,29 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Token 无效或已过期' })
   getInfo(@Request() req: ExpressRequest) {
     return req.user as User;
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('logout')
+  @HttpCode(200)
+  @ApiOperation({ summary: '退出登录' })
+  @ApiResponse({ status: 200, description: '退出成功', type: Result })
+  @ApiResponse({ status: 401, description: 'Token 无效或已过期' })
+  async logout(@Request() req: ExpressRequest) {
+    const token = this.extractTokenFromHeader(req);
+    if (!token) {
+      throw new UnauthorizedException('Token not provided');
+    }
+    // decoded 解析JWT令牌，获取过期时间，并计算TTL（以秒为单位），如果没有过期时间，则不设置TTL
+    const decoded = this.jwtService.decode(token) as | (SignOptions & { exp?: number }) | null;
+    // 将令牌加入黑名单，设置过期时间为TTL，确保令牌在过期后自动失效 这个 token 离过期还剩多少秒，把这个值当成 Redis 黑名单 key 的过期时间，过期后自动删除黑名单 key，节省 Redis 存储空间
+    const ttl = decoded?.exp ? Math.max(decoded.exp - Math.floor(Date.now() / 1000), 1) : undefined;
+    await this.redisService.set(`auth:blacklist:${token}`, '1', ttl);
+    return Result.ok(null, '退出登录成功');
+  }
+
+  private extractTokenFromHeader(request: ExpressRequest): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 }

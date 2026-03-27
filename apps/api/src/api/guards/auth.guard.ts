@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { JwtPayload } from 'jsonwebtoken';
 import { UserService } from '../../shared/services/user.service';
 import { ConfigurationService } from '../../shared/services/configuration.service';
+import { RedisService } from '../../shared/services/redis.service';
 import { Request } from 'express';
 
 // 使用 @Injectable() 装饰器将此类标记为可注入的服务
@@ -14,6 +15,7 @@ export class AuthGuard implements CanActivate {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configurationService: ConfigurationService,
+    private readonly redisService: RedisService,
   ) { }
   // 实现 CanActivate 接口的 canActivate 方法，用于进行身份验证
   async canActivate(
@@ -27,6 +29,12 @@ export class AuthGuard implements CanActivate {
     // 如果没有令牌，抛出未授权异常
     if (!token) {
       throw new UnauthorizedException('Token not provided');
+    }
+
+    // 检查令牌是否在黑名单中，如果在黑名单中，说明令牌已被注销，抛出未授权异常
+    const isBlacklisted = await this.redisService.exists(`auth:blacklist:${token}`);
+    if (isBlacklisted) {
+      throw new UnauthorizedException('Token has been logged out');
     }
 
     let decoded: JwtPayload & { id?: number };
