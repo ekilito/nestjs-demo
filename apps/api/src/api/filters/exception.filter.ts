@@ -20,6 +20,12 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp(); // 获取当前 HTTP 请求上下文
     const response = ctx.getResponse<Response>(); // 获取 HTTP 响应对象
     const request = ctx.getRequest<Request>();
+
+    // 如果响应已经发出，避免再次写入 header/body 导致 ERR_HTTP_HEADERS_SENT
+    if (response.headersSent) {
+      return;
+    }
+
     const status =
       exception instanceof HttpException
         ? exception.getStatus()

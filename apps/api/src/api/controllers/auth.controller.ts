@@ -1,14 +1,23 @@
-// 导入所需的装饰器、模块和服务
-import { Controller, Post, Body, Res, Request, Get, UseGuards, Query } from '@nestjs/common';
-import { Request as ExpressRequest, Response } from 'express';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from '../../shared/services/user.service';
 import { UtilityService } from '../../shared/services/utility.service';
 import { JwtService } from '@nestjs/jwt';
+import type { SignOptions } from 'jsonwebtoken';
 import { ConfigurationService } from '../../shared/services/configuration.service';
+import { AuthLoginDto } from '../../shared/dtos/auth.dto';
+import { Result } from '../../shared/vo/result';
+import { User } from '../../shared/entities/user.entity';
 
+@ApiTags('auth')
 @Controller('/auth')
 export class AuthController {
-  // 构造函数，注入服务类
   constructor(
     private readonly userService: UserService,
     private readonly utilityService: UtilityService,
@@ -17,40 +26,40 @@ export class AuthController {
   ) { }
 
   @Post('login')
-  async login(@Body() body, @Res() res: Response) {
+  @HttpCode(200)
+  @ApiOperation({ summary: '用户登录' })
+  @ApiBody({ type: AuthLoginDto })
+  async login(@Body() body: AuthLoginDto) {
     const { username, password } = body;
-    const user = await this.validateUser(username, password);  // 验证用户
-    if (user) {
-      // 创建 JWT 令牌
-      const tokens = this.createJwtTokens(user);
-      // 返回成功响应，包含令牌信息
-      return res.json({ success: true, ...tokens });
-    }
-    // 如果验证失败，返回 401 状态码和错误信息
-    return res.status(401).json({ success: false, message: '用户名或密码错误' });
+    const user = await this.validateUser(username, password);
+    if (!user) throw new UnauthorizedException('用户名或密码错误');
+
+    const expires_in = this.configurationService.expiresIn || '30m';
+    const access_token = await this.createJwtToken(user);
+    return Result.ok({ access_token, expires_in, }, '登录成功');
   }
 
-  // 验证用户的私有方法
-  private async validateUser(username: string, password: string) {
-    // 查找用户，并获取其关联的角色和权限
-    const user = await this.userService.findOne({ where: { username }, relations: ['roles', 'roles.accesses'] });
-    // 如果用户存在并且密码匹配
-    if (user && await this.utilityService.comparePassword(password, user.password)) {
-      // 返回用户信息
+  // 验证用户凭据，返回用户信息或null
+  private async validateUser(username: string, password: string): Promise<User | null> {
+    const user = await this.userService.findOne({
+      where: { username },
+      relations: ['roles', 'roles.accesses'],
+    });
+    if (user && (await this.utilityService.comparePassword(password, user.password))) {
       return user;
     }
-    // 否则返回 null
     return null;
   }
 
-  // 创建 JWT 令牌的私有方法
-  private createJwtTokens(user: any) {
-    // 创建访问令牌，设置过期时间为 30 分钟
-    const access_token = this.jwtService.sign({ id: user.id, username: user.username }, {
-      secret: this.configurationService.jwtSecret,
-      expiresIn: '30m',
-    });
-    // 返回令牌信息
-    return { access_token };
+  private async createJwtToken(user: User): Promise<string> {
+    const expiresIn = (this.configurationService.expiresIn || '30m') as SignOptions['expiresIn']; // 默认30分钟
+    // 生成JWT令牌，包含用户ID和用户名，并设置过期时间
+    return this.jwtService.signAsync(
+      { id: user.id, username: user.username },
+      {
+        secret: this.configurationService.jwtSecret,
+        expiresIn,
+      },
+    );
   }
 }
