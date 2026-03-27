@@ -1,11 +1,18 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
+  Get,
   HttpCode,
   Post,
+  Request,
+  SerializeOptions,
   UnauthorizedException,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { Request as ExpressRequest } from 'express';
 import { UserService } from '../../shared/services/user.service';
 import { UtilityService } from '../../shared/services/utility.service';
 import { JwtService } from '@nestjs/jwt';
@@ -14,8 +21,11 @@ import { ConfigurationService } from '../../shared/services/configuration.servic
 import { AuthLoginDto } from '../../shared/dtos/auth.dto';
 import { Result } from '../../shared/vo/result';
 import { User } from '../../shared/entities/user.entity';
+import { AuthGuard } from '../guards/auth.guard';
 
 @ApiTags('auth')
+@SerializeOptions({ strategy: 'exposeAll' })
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('/auth')
 export class AuthController {
   constructor(
@@ -61,5 +71,15 @@ export class AuthController {
         expiresIn,
       },
     );
+  }
+
+  // 获取用户信息
+  @UseGuards(AuthGuard)
+  @Get('getInfo')
+  @ApiOperation({ summary: '获取当前登录用户信息' })
+  @ApiResponse({ status: 200, description: '获取成功', type: User })
+  @ApiResponse({ status: 401, description: 'Token 无效或已过期' })
+  getInfo(@Request() req: ExpressRequest) {
+    return req.user as User;
   }
 }
