@@ -4,10 +4,11 @@ import { ConfigurationService } from './configuration.service';
 @Injectable()
 export class RedisService implements OnModuleDestroy {
   private readonly logger = new Logger(RedisService.name);
-  private redisClient: Redis;
+  private redisClient: Redis; // ioredis 的客户端实例
   constructor(
     private configurationService: ConfigurationService
   ) {
+    // 初始化 Redis 客户端（从配置里拿 Redis 地址、端口、密码，应用一启动，就创建一个 Redis 连接客户端）
     this.redisClient = new Redis({
       host: this.configurationService.redisHost,
       port: this.configurationService.redisPort,
@@ -17,8 +18,9 @@ export class RedisService implements OnModuleDestroy {
     this.redisClient.on('error', (error) => {
       this.logger.error(`Redis connection error: ${error.message}`);
     });
-    }
+  }
 
+  // 模块销毁时关闭 Redis 连接
   onModuleDestroy() {
     this.redisClient.quit();
   }
@@ -28,7 +30,7 @@ export class RedisService implements OnModuleDestroy {
     return this.redisClient;
   }
 
-  // 设置键值对，可选设置过期时间
+  // 设置键值对 
   async set(key: string, value: string, ttl?: number): Promise<void> {
     if (ttl) {
       await this.redisClient.set(key, value, 'EX', ttl);
@@ -42,6 +44,7 @@ export class RedisService implements OnModuleDestroy {
     return this.redisClient.get(key);
   }
 
+  // 删除键值对
   async del(key: string): Promise<void> {
     await this.redisClient.del(key);
   }

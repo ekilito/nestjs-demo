@@ -60,6 +60,8 @@ export class ConfigurationService {
       password: this.redisPassword
     }
   }
+
+  // JWT 配置项
   get jwtSecret(): string {
     return this.configService.get<string>('JWT_SECRET') ?? '';
   }
