@@ -33,6 +33,16 @@ export class ConfigurationService {
     };
   }
 
+  get ipApiUrl(): string {
+    return this.configService.get<string>('IP_API_URL') ?? '';
+  }
+  get weatherApiKey(): string {
+    return this.configService.get<string>('WEATHER_API_KEY') ?? '';
+  }
+  get weatherApiUrl(): string {
+    return this.configService.get<string>('WEATHER_API_URL') ?? '';
+  }
+
   // redis 配置项
   get redisHost(): string {
     return this.configService.get<string>('REDIS_HOST') ?? '127.0.0.1';
@@ -49,5 +59,11 @@ export class ConfigurationService {
       port: this.redisPort,
       password: this.redisPassword
     }
+  }
+  get jwtSecret(): string {
+    return this.configService.get<string>('JWT_SECRET') ?? '';
+  }
+  get expiresIn(): string {
+    return this.configService.get<string>('JWT_EXPIRES_IN') ?? '';
   }
 }

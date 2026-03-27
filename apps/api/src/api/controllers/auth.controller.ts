@@ -1,98 +1,56 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  Post,
-  Res,
-  Session,
-  UnauthorizedException,
-} from '@nestjs/common';
-import type { Response } from 'express';
-import {
-  ApiBody,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+// 导入所需的装饰器、模块和服务
+import { Controller, Post, Body, Res, Request, Get, UseGuards, Query } from '@nestjs/common';
+import { Request as ExpressRequest, Response } from 'express';
 import { UserService } from '../../shared/services/user.service';
 import { UtilityService } from '../../shared/services/utility.service';
-import { AuthLoginDto } from '../../shared/dtos/auth.dto';
-import { Result } from '../../shared/vo/result';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigurationService } from '../../shared/services/configuration.service';
 
-@ApiTags('auth')
-@Controller('auth')
+@Controller('/auth')
 export class AuthController {
+  // 构造函数，注入服务类
   constructor(
     private readonly userService: UserService,
     private readonly utilityService: UtilityService,
+    private readonly jwtService: JwtService,
+    private readonly configurationService: ConfigurationService,
   ) { }
 
   @Post('login')
-  @ApiOperation({ summary: '登录' })
-  @ApiBody({ type: AuthLoginDto })
-  @ApiResponse({ status: 200, description: '登录成功', type: Result })
-  @HttpCode(200)
-  async login(@Body() body: AuthLoginDto, @Session() session: Record<string, any>) {
-    const { username, password, captcha } = body;
-    if (captcha?.toLowerCase() !== session.captcha?.toLowerCase()) {
-      throw new UnauthorizedException('验证码错误');
+  async login(@Body() body, @Res() res: Response) {
+    const { username, password } = body;
+    const user = await this.validateUser(username, password);  // 验证用户
+    if (user) {
+      // 创建 JWT 令牌
+      const tokens = this.createJwtTokens(user);
+      // 返回成功响应，包含令牌信息
+      return res.json({ success: true, ...tokens });
     }
-    delete session.captcha;
-
-    const user = await this.userService.findOne({
-      where: { username },
-      relations: ['roles', 'roles.accesses'],
-    });
-
-    if (!user || !(await this.utilityService.comparePassword(password, user.password))) {
-      throw new UnauthorizedException('用户名或密码错误');
-    }
-
-    session.user = {
-      id: user.id,
-      username: user.username,
-      roles: user.roles ?? [],
-    };
-
-    return {
-      userInfo: session.user,
-    };
+    // 如果验证失败，返回 401 状态码和错误信息
+    return res.status(401).json({ success: false, message: '用户名或密码错误' });
   }
 
-  @Get('captcha')
-  @ApiOperation({ summary: '获取验证码(svg)' })
-  @ApiResponse({ status: 200, description: '验证码 SVG' })
-  getCaptcha(
-    @Res() res: Response,
-    @Session() session: Record<string, any>,
-  ) {
-    const captcha = this.utilityService.generateCaptcha({
-      size: 4,
-      ignoreChars: '0o1il',
-      noise: 2,
-      color: true,
-    });
-    session.captcha = captcha.text;
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.type('svg');
-    res.send(captcha.data);
-  }
-
-  @Post('logout')
-  @ApiOperation({ summary: '退出登录' })
-  @ApiResponse({ status: 200, description: '退出成功', type: Result })
-  @HttpCode(200)
-  async logout(
-    @Res({ passthrough: true }) res: Response,
-    @Session() session: Record<string, any>,
-  ) {
-    await new Promise<void>((resolve) => {
-      session.destroy(() => resolve());
-    });
-    res.clearCookie('connect.sid');
+  // 验证用户的私有方法
+  private async validateUser(username: string, password: string) {
+    // 查找用户，并获取其关联的角色和权限
+    const user = await this.userService.findOne({ where: { username }, relations: ['roles', 'roles.accesses'] });
+    // 如果用户存在并且密码匹配
+    if (user && await this.utilityService.comparePassword(password, user.password)) {
+      // 返回用户信息
+      return user;
+    }
+    // 否则返回 null
     return null;
+  }
+
+  // 创建 JWT 令牌的私有方法
+  private createJwtTokens(user: any) {
+    // 创建访问令牌，设置过期时间为 30 分钟
+    const access_token = this.jwtService.sign({ id: user.id, username: user.username }, {
+      secret: this.configurationService.jwtSecret,
+      expiresIn: '30m',
+    });
+    // 返回令牌信息
+    return { access_token };
   }
 }

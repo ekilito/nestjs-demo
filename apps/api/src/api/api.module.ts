@@ -10,9 +10,17 @@ import { SettingController } from './controllers/setting.controller';
 import { WordExportService } from '../shared/services/word-export.service';
 import { DashboardController } from './controllers/dashboard.controller';
 import { AuthController } from './controllers/auth.controller';
+import { JwtModule } from '@nestjs/jwt';
 
 
 @Module({
+  imports: [
+    // 全局注册 JwtModule，并设置过期时间为 7 天
+    JwtModule.register({
+      global: true, // 设置为全局模块
+      signOptions: { expiresIn: '7d' } // 设置 JWT 过期时间为 7 天
+    }),
+  ],
   controllers: [UserController, RoleController, AccessController, TagController, CategoryController, ArticleController, UploadController, SettingController, DashboardController, AuthController],
   providers: [WordExportService], // 注册 Word 导出服务
 })
