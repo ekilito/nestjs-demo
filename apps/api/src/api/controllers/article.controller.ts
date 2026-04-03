@@ -9,6 +9,7 @@ import {
   Post,
   Delete,
   Param,
+  Query,
   Header,
   NotFoundException,
   BadRequestException,
@@ -19,6 +20,7 @@ import type { Response } from 'express';
 import {
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiParam,
   ApiResponse,
   ApiTags,
@@ -36,6 +38,7 @@ import { Article } from '../../shared/entities/article.entity';
 import { WordExportService } from '../../shared/services/word-export.service';
 import { PptExportService } from '../../shared/services/ppt-export.service';
 import { ExcelExportService } from '../../shared/services/excel-export.service';
+import { Public } from '../decorators/public.decorator';
 
 @ApiTags('Article')
 @SerializeOptions({ strategy: 'exposeAll' }) // 序列化选项 - 暴露所有属性
@@ -61,6 +64,26 @@ export class ArticleController {
   async getPage(@Body() pageDto: ArticlePageDto) {
     const { pageNum = 1, pageSize = 10, ...query } = pageDto;
     return await this.articleService.getPageByQuery(pageNum, pageSize, query);
+  }
+
+  @Get('list')
+  @ApiOperation({ summary: '文章列表（支持关键词、分类、标签筛选）' })
+  @ApiQuery({ name: 'keyword', required: false, type: String, description: '关键词' })
+  @ApiQuery({ name: 'categoryId', required: false, type: String, description: '分类 ID' })
+  @ApiQuery({ name: 'tagId', required: false, type: String, description: '标签 ID' })
+  @ApiResponse({ status: 200, description: '成功返回文章列表', type: [Article] })
+  async getList(
+    @Query('keyword') keyword: string = '',
+    @Query('categoryId') categoryId: string = '',
+    @Query('tagId') tagId: string = '',
+  ) {
+    const articles = await this.articleService.findList(keyword, categoryId, tagId);
+    return {
+      keyword,
+      categoryId,
+      tagId,
+      articles,
+    };
   }
 
   @Post('create')

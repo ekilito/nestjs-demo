@@ -55,6 +55,40 @@ export class ArticleService extends MySQLBaseService<Article> {
     return article;
   }
 
+  async findList(
+    keyword: string = '',
+    categoryId: string = '',
+    tagId: string = '',
+  ): Promise<Article[]> {
+    const qb = this.repository
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.categories', 'category')
+      .leftJoinAndSelect('article.tags', 'tag')
+      .where('article.status = :status', { status: 1 })
+      .andWhere('article.state = :state', {
+        state: ArticleStateEnum.PUBLISHED,
+      })
+      .orderBy('article.createdAt', 'DESC');
+
+    const trimmedKeyword = keyword.trim();
+    if (trimmedKeyword) {
+      qb.andWhere(
+        '(article.title LIKE :keyword OR article.content LIKE :keyword)',
+        { keyword: `%${trimmedKeyword}%` },
+      );
+    }
+
+    if (categoryId) {
+      qb.andWhere('category.id = :categoryId', { categoryId });
+    }
+
+    if (tagId) {
+      qb.andWhere('tag.id = :tagId', { tagId });
+    }
+
+    return await qb.getMany();
+  }
+
   async create(data: CreateArticleDto): Promise<Article> {
     // 验证数据
     if (Array.isArray(data)) {
