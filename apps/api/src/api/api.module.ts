@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { UserController } from './controllers/user.controller';
 import { RoleController } from './controllers/role.controller';
 import { AccessController } from './controllers/access.controller';
@@ -11,6 +12,7 @@ import { WordExportService } from '../shared/services/word-export.service';
 import { DashboardController } from './controllers/dashboard.controller';
 import { AuthController } from './controllers/auth.controller';
 import { JwtModule } from '@nestjs/jwt';
+import { AuthGuard } from './guards/auth.guard';
 
 
 @Module({
@@ -22,6 +24,12 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   controllers: [UserController, RoleController, AccessController, TagController, CategoryController, ArticleController, UploadController, SettingController, DashboardController, AuthController],
-  providers: [WordExportService], // 注册 Word 导出服务
+  providers: [
+    WordExportService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ], // 注册 Word 导出服务
 })
 export class ApiModule { }

@@ -1,17 +1,20 @@
 // 导入所需的装饰器、模块和服务
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { JwtPayload } from 'jsonwebtoken';
 import { UserService } from '../../shared/services/user.service';
 import { ConfigurationService } from '../../shared/services/configuration.service';
 import { RedisService } from '../../shared/services/redis.service';
 import { Request } from 'express';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 // 使用 @Injectable() 装饰器将此类标记为可注入的服务
 @Injectable()
 export class AuthGuard implements CanActivate {
   // 构造函数，注入所需的服务
   constructor(
+    private readonly reflector: Reflector,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configurationService: ConfigurationService,
@@ -21,6 +24,15 @@ export class AuthGuard implements CanActivate {
   async canActivate(
     context: ExecutionContext,
   ): Promise<boolean> {
+    // 检查是否为公共api，如果是公共api，则直接允许访问
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
+
     // 获取 HTTP 请求对象
     const request = context.switchToHttp().getRequest<Request>();
     // 从请求头中提取令牌

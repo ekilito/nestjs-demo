@@ -8,7 +8,6 @@ import {
   Request,
   SerializeOptions,
   UnauthorizedException,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -21,8 +20,8 @@ import { ConfigurationService } from '../../shared/services/configuration.servic
 import { AuthLoginDto } from '../../shared/dtos/auth.dto';
 import { Result } from '../../shared/vo/result';
 import { User } from '../../shared/entities/user.entity';
-import { AuthGuard } from '../guards/auth.guard';
 import { RedisService } from '../../shared/services/redis.service';
+import { Public } from '../decorators/public.decorator';
 
 @ApiTags('auth')
 @SerializeOptions({ strategy: 'exposeAll' })
@@ -39,6 +38,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
+  @Public()
   @ApiOperation({ summary: '用户登录' })
   @ApiBody({ type: AuthLoginDto })
   async login(@Body() body: AuthLoginDto) {
@@ -76,7 +76,6 @@ export class AuthController {
   }
 
   // 获取用户信息
-  @UseGuards(AuthGuard)
   @Get('getInfo')
   @ApiOperation({ summary: '获取当前登录用户信息' })
   @ApiResponse({ status: 200, description: '获取成功', type: User })
@@ -85,7 +84,6 @@ export class AuthController {
     return req.user as User;
   }
 
-  @UseGuards(AuthGuard)
   @Post('logout')
   @HttpCode(200)
   @ApiOperation({ summary: '退出登录' })
